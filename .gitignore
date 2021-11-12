@@ -1,0 +1,11 @@
+# IDE related
+.idea/
+
+# environment related
+.env
+
+# build related
+build/
+
+# testing related
+coverage.html
