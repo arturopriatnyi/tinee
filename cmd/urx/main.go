@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+
+	"urx/internal/config"
 )
 
 func main() {
@@ -20,18 +22,20 @@ func main() {
 	undo := zap.ReplaceGlobals(logger)
 	defer undo()
 
+	cfg := config.Get()
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = fmt.Fprint(w, "urx")
 	})
 	s := &http.Server{
-		Addr: ":8080",
+		Addr: cfg.HTTPServer.Addr,
 	}
 	go func() {
 		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			zap.L().Fatal("couldn't start HTTP server")
 		}
 	}()
-	zap.L().Info("starting HTTP server on :8080")
+	zap.S().Infof("starting HTTP server on %s", cfg.HTTPServer.Addr)
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt)
