@@ -1,7 +1,7 @@
 version: "3.6"
 
 services:
-  zen:
+  urx:
     container_name: urx
     build: ./
     env_file:
