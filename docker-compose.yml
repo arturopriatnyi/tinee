@@ -1,0 +1,12 @@
+version: "3.7"
+
+services:
+  zen:
+    container_name: urx
+    build: ./
+    env_file:
+      - ./.env
+    ports:
+      - "8080:8080"
+    command: make start
+    restart: unless-stopped
