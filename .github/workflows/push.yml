@@ -19,3 +19,13 @@ jobs:
       
     - name: Run build
       run: make build
+
+    - name: sign in to VPS and trigger deploy script
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        passphrase: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: cd urx && ./deploy.sh
