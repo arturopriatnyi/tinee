@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"net/http"
+	stdhttp "net/http"
 	"os"
 	"os/signal"
 	"time"
@@ -12,7 +11,9 @@ import (
 	"go.uber.org/zap"
 
 	"urx/internal/config"
+	"urx/internal/http"
 	"urx/internal/mongodb"
+	"urx/internal/service"
 )
 
 func main() {
@@ -33,14 +34,14 @@ func main() {
 	}
 	zap.L().Info("connected to MongoDB")
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = fmt.Fprint(w, "urx")
-	})
-	s := &http.Server{
-		Addr: cfg.HTTPServer.Addr,
+	svc := service.New(mongodb.NewLinkRepo(mgo))
+
+	s := &stdhttp.Server{
+		Addr:    cfg.HTTPServer.Addr,
+		Handler: http.NewHandler(svc),
 	}
 	go func() {
-		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := s.ListenAndServe(); err != nil && err != stdhttp.ErrServerClosed {
 			zap.L().Fatal("couldn't start HTTP server")
 		}
 	}()
