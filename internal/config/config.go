@@ -15,8 +15,14 @@ var (
 
 // Config is configuration for all project components.
 type Config struct {
+	Service
 	MongoDB
 	HTTPServer
+}
+
+// Service is configuration for service.
+type Service struct {
+	Domain string `envconfig:"SERVICE_DOMAIN" default:"urx.io"`
 }
 
 // MongoDB is configuration for MongoDB database.
