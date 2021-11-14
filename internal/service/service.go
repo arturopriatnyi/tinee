@@ -7,7 +7,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"regexp"
+	"net/url"
 
 	"urx/internal/config"
 )
@@ -25,12 +25,10 @@ type Service struct {
 	r   LinkRepo
 }
 
-// NewService creates and returns a new Service instance.
-func NewService(r LinkRepo) *Service {
+// New creates and returns a new Service instance.
+func New(r LinkRepo) *Service {
 	return &Service{cfg: config.Get().Service, r: r}
 }
-
-const RegexpURLPattern = `^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$`
 
 var (
 	// ErrInvalidURL is returned when invalid URL was provided.
@@ -43,7 +41,7 @@ var (
 
 // Shorten shortens provided URL.
 func (s *Service) Shorten(ctx context.Context, URL string) (URX string, err error) {
-	if isValidURL, err := regexp.MatchString(RegexpURLPattern, URL); !isValidURL || err != nil {
+	if _, err = url.ParseRequestURI(URL); err != nil {
 		return "", ErrInvalidURL
 	}
 
@@ -56,6 +54,13 @@ func (s *Service) Shorten(ctx context.Context, URL string) (URX string, err erro
 	}
 
 	return fmt.Sprintf("%s/%s", s.cfg.Domain, URX), s.r.Save(ctx, Link{URL: URL, URX: URX})
+}
+
+// FindURL finds URL by URX.
+func (s *Service) FindURL(ctx context.Context, URX string) (URL string, err error) {
+	l, err := s.r.FindByURX(ctx, URX)
+
+	return l.URL, err
 }
 
 // generateURX generates random URX.

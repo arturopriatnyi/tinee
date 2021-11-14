@@ -32,7 +32,7 @@ func TestNewService(t *testing.T) {
 	is := is.New(t)
 	r := &mockLinkRepo{}
 
-	is.Equal(&Service{cfg: config.Service{Domain: "urx.io"}, r: r}, NewService(r))
+	is.Equal(&Service{cfg: config.Service{Domain: "urx.io"}, r: r}, New(r))
 }
 
 func TestService_Shorten(t *testing.T) {
@@ -91,7 +91,7 @@ func TestService_Shorten(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			is := is.New(t)
-			s := NewService(tc.r)
+			s := New(tc.r)
 
 			urx, err := s.Shorten(context.Background(), tc.url)
 
@@ -101,5 +101,36 @@ func TestService_Shorten(t *testing.T) {
 				t.Errorf("invalid URX: %s", urx)
 			}
 		})
+	}
+}
+
+func TestService_FindURL(t *testing.T) {
+	testcases := []struct {
+		name   string
+		r      *mockLinkRepo
+		urx    string
+		expUrl string
+		expErr error
+	}{
+		{
+			name: "URL is found",
+			r: &mockLinkRepo{
+				findByURX: func(ctx context.Context, URX string) (Link, error) {
+					return Link{URL: "https://xxxxxxxxxx.xxx/xxxxxxxx"}, nil
+				},
+			},
+			urx:    "xxxxxxxx",
+			expUrl: "https://xxxxxxxxxx.xxx/xxxxxxxx",
+			expErr: nil,
+		},
+	}
+
+	for _, tc := range testcases {
+		is := is.New(t)
+
+		url, err := New(tc.r).FindURL(context.Background(), tc.urx)
+
+		is.Equal(tc.expUrl, url)
+		is.Equal(tc.expErr, err)
 	}
 }
