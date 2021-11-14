@@ -15,7 +15,16 @@ var (
 
 // Config is configuration for all project components.
 type Config struct {
+	MongoDB
 	HTTPServer
+}
+
+// MongoDB is configuration for MongoDB database.
+type MongoDB struct {
+	URL      string `envconfig:"MONGO_URL" default:"mongodb://localhost:27017"`
+	Username string `envconfig:"MONGO_USERNAME" default:"root"`
+	Password string `envconfig:"MONGO_PASSWORD" default:"password"`
+	DbName   string `envconfig:"MONGO_DBNAME" default:"urx"`
 }
 
 // HTTPServer is configuration for HTTP server.

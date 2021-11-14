@@ -12,9 +12,12 @@ import (
 	"go.uber.org/zap"
 
 	"urx/internal/config"
+	"urx/internal/mongodb"
 )
 
 func main() {
+	ctx := context.Background()
+
 	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatal(err)
@@ -23,6 +26,12 @@ func main() {
 	defer undo()
 
 	cfg := config.Get()
+
+	mgo, err := mongodb.Open(ctx, cfg.MongoDB)
+	if err != nil {
+		zap.L().Fatal(err.Error())
+	}
+	zap.L().Info("connected to MongoDB")
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = fmt.Fprint(w, "urx")
@@ -47,4 +56,9 @@ func main() {
 		zap.L().Fatal("HTTP server couldn't shut down gracefully")
 	}
 	zap.L().Info("HTTP server shut down gracefully")
+
+	if err = mgo.Close(ctx); err != nil {
+		zap.L().Error("failed to disconnect from MongoDB")
+	}
+	zap.L().Info("disconnected from MongoDB")
 }

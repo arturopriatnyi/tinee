@@ -10,3 +10,18 @@ services:
       - "8080:8080"
     command: make start
     restart: unless-stopped
+    depends_on:
+      - mongodb
+
+  mongodb:
+    container_name: mongodb
+    image: mongo:5.0
+    env_file:
+      - ./.env
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
