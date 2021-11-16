@@ -35,25 +35,35 @@ var (
 	ErrInvalidURL = errors.New("invalid URL")
 	// ErrLinkNotFound is returned when link was not found in store.
 	ErrLinkNotFound = errors.New("link not found")
+	// ErrRequestedURXTaken is returned when requested URX is already taken.
+	ErrRequestedURXTaken = errors.New("requested URX is taken")
 	// ErrGeneratingURX is returned when error occurred while generating URX.
 	ErrGeneratingURX = errors.New("couldn't generate URX")
 )
 
 // Shorten shortens provided URL.
-func (s *Service) Shorten(ctx context.Context, URL string) (URX string, err error) {
+func (s *Service) Shorten(ctx context.Context, URL, requestedURX string) (URX string, err error) {
 	if _, err = url.ParseRequestURI(URL); err != nil {
 		return "", ErrInvalidURL
 	}
 
 	if l, err := s.r.FindByURL(ctx, URL); err == nil {
-		return fmt.Sprintf("%s/%s", s.cfg.Domain, l.URX), nil
+		return s.buildURX(l.URX), nil
+	}
+
+	if requestedURX != "" {
+		if _, err := s.r.FindByURX(ctx, requestedURX); err == nil {
+			return "", ErrRequestedURXTaken
+		}
+
+		return s.buildURX(requestedURX), s.r.Save(ctx, Link{URL: URL, URX: requestedURX})
 	}
 
 	if URX, err = s.generateURX(ctx); err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf("%s/%s", s.cfg.Domain, URX), s.r.Save(ctx, Link{URL: URL, URX: URX})
+	return s.buildURX(URX), s.r.Save(ctx, Link{URL: URL, URX: URX})
 }
 
 // FindURL finds URL by URX.
@@ -61,6 +71,10 @@ func (s *Service) FindURL(ctx context.Context, URX string) (URL string, err erro
 	l, err := s.r.FindByURX(ctx, URX)
 
 	return l.URL, err
+}
+
+func (s *Service) buildURX(URX string) string {
+	return fmt.Sprintf("%s/%s", s.cfg.Domain, URX)
 }
 
 // generateURX generates random URX.
