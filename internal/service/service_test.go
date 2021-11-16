@@ -37,10 +37,11 @@ func TestNewService(t *testing.T) {
 
 func TestService_Shorten(t *testing.T) {
 	testcases := []struct {
-		name   string
-		r      *mockLinkRepo
-		url    string
-		expErr error
+		name         string
+		r            *mockLinkRepo
+		url          string
+		requestedURX string
+		expErr       error
 	}{
 		{
 			name: "URL is shortened",
@@ -55,8 +56,43 @@ func TestService_Shorten(t *testing.T) {
 					return nil
 				},
 			},
-			url:    "https://xxxxxxxxxx.xxx/xxxxxx?x=xxx",
-			expErr: nil,
+			url:          "https://xxxxxxxxxx.xxx/xxxxxx?x=xxx",
+			requestedURX: "",
+			expErr:       nil,
+		},
+		{
+			name: "URL is shortened with requested URX",
+			r: &mockLinkRepo{
+				findByURL: func(ctx context.Context, url string) (Link, error) {
+					return Link{}, ErrLinkNotFound
+				},
+				findByURX: func(ctx context.Context, urx string) (Link, error) {
+					return Link{}, ErrLinkNotFound
+				},
+				save: func(ctx context.Context, link Link) error {
+					return nil
+				},
+			},
+			url:          "https://xxxxxxxxxx.xxx/xxxxxx?x=xxx",
+			requestedURX: "urx",
+			expErr:       nil,
+		},
+		{
+			name: "requested URX is taken",
+			r: &mockLinkRepo{
+				findByURL: func(ctx context.Context, url string) (Link, error) {
+					return Link{}, ErrLinkNotFound
+				},
+				findByURX: func(ctx context.Context, urx string) (Link, error) {
+					return Link{}, nil
+				},
+				save: func(ctx context.Context, link Link) error {
+					return nil
+				},
+			},
+			url:          "https://xxxxxxxxxx.xxx/xxxxxx?x=xxx",
+			requestedURX: "urx",
+			expErr:       ErrRequestedURXTaken,
 		},
 		{
 			name:   "invalid URL",
@@ -70,8 +106,9 @@ func TestService_Shorten(t *testing.T) {
 					return Link{URX: "xxxxxxxx"}, nil
 				},
 			},
-			url:    "https://xxxxxxxxxx.xxx/xxxxxx?x=xxx",
-			expErr: nil,
+			url:          "https://xxxxxxxxxx.xxx/xxxxxx?x=xxx",
+			requestedURX: "",
+			expErr:       nil,
 		},
 		{
 			name: "all URXs are taken",
@@ -83,8 +120,9 @@ func TestService_Shorten(t *testing.T) {
 					return Link{}, nil
 				},
 			},
-			url:    "https://xxxxxxxxxx.xxx/xxxxxx?x=xxx",
-			expErr: ErrGeneratingURX,
+			url:          "https://xxxxxxxxxx.xxx/xxxxxx?x=xxx",
+			requestedURX: "",
+			expErr:       ErrGeneratingURX,
 		},
 	}
 
@@ -93,11 +131,11 @@ func TestService_Shorten(t *testing.T) {
 			is := is.New(t)
 			s := New(tc.r)
 
-			urx, err := s.Shorten(context.Background(), tc.url)
+			urx, err := s.Shorten(context.Background(), tc.url, tc.requestedURX)
 
 			is.Equal(tc.expErr, err)
 			matched, _ := regexp.MatchString(`urx.io/[a-z0-9]{8}`, urx)
-			if tc.expErr == nil && !matched {
+			if tc.expErr == nil && tc.requestedURX == "" && !matched {
 				t.Errorf("invalid URX: %s", urx)
 			}
 		})
