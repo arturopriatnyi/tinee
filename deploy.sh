@@ -1,7 +1,8 @@
 echo "Deploying..."
 
 git pull
-docker-compose down
-docker-compose up -d --build
+make down
+make build
+make up
 
 echo "Deployment completed"

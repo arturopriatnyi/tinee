@@ -3,12 +3,13 @@ version: "3.6"
 services:
   urx:
     container_name: urx
-    build: ./
+    build:
+      context: .
+      dockerfile: Dockerfile
     env_file:
       - ./.env
     ports:
       - "8080:8080"
-    command: make start
     restart: unless-stopped
     depends_on:
       - mongodb
@@ -20,6 +21,7 @@ services:
       - ./.env
     ports:
       - "27017:27017"
+    restart: unless-stopped
     volumes:
       - mongodb_data:/data/db
 

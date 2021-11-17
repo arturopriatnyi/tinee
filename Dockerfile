@@ -5,4 +5,5 @@ RUN apk update && apk add make
 WORKDIR ./urx
 COPY . .
 
-RUN make build
+RUN go build -o ./build/urx ./cmd/urx/main.go
+CMD ["./build/urx"]
