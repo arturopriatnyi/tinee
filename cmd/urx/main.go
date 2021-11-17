@@ -19,11 +19,11 @@ import (
 func main() {
 	ctx := context.Background()
 
-	logger, err := zap.NewProduction()
+	l, err := zap.NewProduction()
 	if err != nil {
 		log.Fatal(err)
 	}
-	undo := zap.ReplaceGlobals(logger)
+	undo := zap.ReplaceGlobals(l)
 	defer undo()
 
 	cfg := config.Get()
@@ -34,15 +34,17 @@ func main() {
 	}
 	zap.L().Info("connected to MongoDB")
 
-	svc := service.New(mongodb.NewLinkRepo(mgo))
+	r := mongodb.NewLinkRepo(mgo)
 
-	s := &stdhttp.Server{
+	s := service.New(r)
+
+	srv := &stdhttp.Server{
 		Addr:    cfg.HTTPServer.Addr,
-		Handler: http.NewHandler(svc),
+		Handler: http.NewHandler(s),
 	}
 	go func() {
-		if err := s.ListenAndServe(); err != nil && err != stdhttp.ErrServerClosed {
-			zap.L().Fatal("couldn't start HTTP server")
+		if err := srv.ListenAndServe(); err != nil && err != stdhttp.ErrServerClosed {
+			zap.L().Fatal(err.Error())
 		}
 	}()
 	zap.S().Infof("starting HTTP server on %s", cfg.HTTPServer.Addr)
@@ -53,13 +55,13 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := s.Shutdown(ctx); err != nil {
-		zap.L().Fatal("HTTP server couldn't shut down gracefully")
+	if err := srv.Shutdown(ctx); err != nil {
+		zap.L().Error(err.Error())
 	}
 	zap.L().Info("HTTP server shut down gracefully")
 
 	if err = mgo.Close(ctx); err != nil {
-		zap.L().Error("failed to disconnect from MongoDB")
+		zap.L().Error(err.Error())
 	}
 	zap.L().Info("disconnected from MongoDB")
 }
