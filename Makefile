@@ -1,12 +1,12 @@
 .PHONY: build
 build:
-	go build -o ./build/urx ./cmd/urx/main.go
+	docker-compose build
 
-run:
-	go run ./cmd/urx/main.go
+up:
+	docker-compose up -d
 
-start:
-	./build/urx
+down:
+	docker-compose down
 
 test:
 	go test -cover -coverprofile=coverage.html -timeout 30s ./...
