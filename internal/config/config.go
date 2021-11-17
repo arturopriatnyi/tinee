@@ -1,4 +1,4 @@
-// Package config provides configuration for all project components.
+// Package config provides configuration for all application components.
 package config
 
 import (
@@ -13,7 +13,7 @@ var (
 	once sync.Once
 )
 
-// Config is configuration for all project components.
+// Config is configuration for all application components.
 type Config struct {
 	Service
 	MongoDB
@@ -38,7 +38,7 @@ type HTTPServer struct {
 	Addr string `envconfig:"HTTPSERVER_ADDR" default:":8080"`
 }
 
-// Get creates Config singleton instance and returns it.
+// Get reads Config as singleton instance and returns it.
 func Get() Config {
 	once.Do(func() {
 		if err := envconfig.Process("", &cfg); err != nil {
