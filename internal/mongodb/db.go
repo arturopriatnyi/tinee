@@ -1,4 +1,4 @@
-// Package mongodb provides MongoDB database with repositories.
+// Package mongodb is responsible for data persistence to MongoDB.
 package mongodb
 
 import (
