@@ -11,9 +11,9 @@ import (
 )
 
 type mockLinkRepo struct {
-	save      func(ctx context.Context, link Link) error
-	findByURL func(ctx context.Context, URL string) (Link, error)
-	findByURX func(ctx context.Context, URX string) (Link, error)
+	save        func(ctx context.Context, link Link) error
+	findByURL   func(ctx context.Context, URL string) (Link, error)
+	findByAlias func(ctx context.Context, alias string) (Link, error)
 }
 
 func (r *mockLinkRepo) Save(ctx context.Context, link Link) error {
@@ -24,15 +24,16 @@ func (r *mockLinkRepo) FindByURL(ctx context.Context, URL string) (Link, error) 
 	return r.findByURL(ctx, URL)
 }
 
-func (r *mockLinkRepo) FindByURX(ctx context.Context, URX string) (Link, error) {
-	return r.findByURX(ctx, URX)
+func (r *mockLinkRepo) FindByAlias(ctx context.Context, alias string) (Link, error) {
+	return r.findByAlias(ctx, alias)
 }
 
 func TestNewService(t *testing.T) {
 	is := is.New(t)
+	cfg := config.Service{}
 	r := &mockLinkRepo{}
 
-	is.Equal(&Service{cfg: config.Service{Domain: "urx.io"}, r: r}, New(r))
+	is.Equal(&Service{cfg: cfg, r: r}, New(cfg, r))
 }
 
 func TestService_Shorten(t *testing.T) {
@@ -49,7 +50,7 @@ func TestService_Shorten(t *testing.T) {
 				findByURL: func(ctx context.Context, url string) (Link, error) {
 					return Link{}, ErrLinkNotFound
 				},
-				findByURX: func(ctx context.Context, urx string) (Link, error) {
+				findByAlias: func(ctx context.Context, urx string) (Link, error) {
 					return Link{}, ErrLinkNotFound
 				},
 				save: func(ctx context.Context, link Link) error {
@@ -66,7 +67,7 @@ func TestService_Shorten(t *testing.T) {
 				findByURL: func(ctx context.Context, url string) (Link, error) {
 					return Link{}, ErrLinkNotFound
 				},
-				findByURX: func(ctx context.Context, urx string) (Link, error) {
+				findByAlias: func(ctx context.Context, urx string) (Link, error) {
 					return Link{}, ErrLinkNotFound
 				},
 				save: func(ctx context.Context, link Link) error {
@@ -76,65 +77,22 @@ func TestService_Shorten(t *testing.T) {
 			url:          "https://xxxxxxxxxx.xxx/xxxxxx?x=xxx",
 			requestedURX: "urx",
 			expErr:       nil,
-		},
-		{
-			name: "requested URX is taken",
-			r: &mockLinkRepo{
-				findByURL: func(ctx context.Context, url string) (Link, error) {
-					return Link{}, ErrLinkNotFound
-				},
-				findByURX: func(ctx context.Context, urx string) (Link, error) {
-					return Link{}, nil
-				},
-				save: func(ctx context.Context, link Link) error {
-					return nil
-				},
-			},
-			url:          "https://xxxxxxxxxx.xxx/xxxxxx?x=xxx",
-			requestedURX: "urx",
-			expErr:       ErrRequestedURXTaken,
 		},
 		{
 			name:   "invalid URL",
 			url:    "xxx",
 			expErr: ErrInvalidURL,
 		},
-		{
-			name: "URL is shortened already",
-			r: &mockLinkRepo{
-				findByURL: func(ctx context.Context, url string) (Link, error) {
-					return Link{URX: "xxxxxxxx"}, nil
-				},
-			},
-			url:          "https://xxxxxxxxxx.xxx/xxxxxx?x=xxx",
-			requestedURX: "",
-			expErr:       nil,
-		},
-		{
-			name: "all URXs are taken",
-			r: &mockLinkRepo{
-				findByURL: func(ctx context.Context, url string) (Link, error) {
-					return Link{}, ErrLinkNotFound
-				},
-				findByURX: func(ctx context.Context, urx string) (Link, error) {
-					return Link{}, nil
-				},
-			},
-			url:          "https://xxxxxxxxxx.xxx/xxxxxx?x=xxx",
-			requestedURX: "",
-			expErr:       ErrGeneratingURX,
-		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			is := is.New(t)
-			s := New(tc.r)
 
-			urx, err := s.Shorten(context.Background(), tc.url, tc.requestedURX)
+			urx, err := New(config.Service{}, tc.r).Shorten(context.Background(), tc.url)
 
 			is.Equal(tc.expErr, err)
-			matched, _ := regexp.MatchString(`urx.io/[a-z0-9]{8}`, urx)
+			matched, _ := regexp.MatchString(`/[a-zA-Z0-9]{8}`, urx)
 			if tc.expErr == nil && tc.requestedURX == "" && !matched {
 				t.Errorf("invalid URX: %s", urx)
 			}
@@ -153,7 +111,7 @@ func TestService_FindURL(t *testing.T) {
 		{
 			name: "URL is found",
 			r: &mockLinkRepo{
-				findByURX: func(ctx context.Context, URX string) (Link, error) {
+				findByAlias: func(ctx context.Context, URX string) (Link, error) {
 					return Link{URL: "https://xxxxxxxxxx.xxx/xxxxxxxx"}, nil
 				},
 			},
@@ -166,7 +124,7 @@ func TestService_FindURL(t *testing.T) {
 	for _, tc := range testcases {
 		is := is.New(t)
 
-		url, err := New(tc.r).FindURL(context.Background(), tc.urx)
+		url, err := New(config.Service{}, tc.r).FindURL(context.Background(), tc.urx)
 
 		is.Equal(tc.expUrl, url)
 		is.Equal(tc.expErr, err)

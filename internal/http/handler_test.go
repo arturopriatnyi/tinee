@@ -3,7 +3,6 @@ package http
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -15,12 +14,12 @@ import (
 )
 
 type mockService struct {
-	shorten func(ctx context.Context, URL, requestedURX string) (URX string, err error)
+	shorten func(ctx context.Context, URL string) (URX string, err error)
 	findURL func(ctx context.Context, URX string) (URL string, err error)
 }
 
-func (s *mockService) Shorten(ctx context.Context, URL, requestedURX string) (URX string, err error) {
-	return s.shorten(ctx, URL, requestedURX)
+func (s *mockService) Shorten(ctx context.Context, URL string) (URX string, err error) {
+	return s.shorten(ctx, URL)
 }
 
 func (s *mockService) FindURL(ctx context.Context, URX string) (URL string, err error) {
@@ -39,7 +38,7 @@ func TestHandler_Shorten(t *testing.T) {
 		{
 			name: "URL is shortened",
 			s: &mockService{
-				shorten: func(ctx context.Context, URL, requestedURX string) (URX string, err error) {
+				shorten: func(ctx context.Context, URL string) (URX string, err error) {
 					return "urx.io/xxxxxxxx", nil
 				},
 			},
@@ -47,20 +46,9 @@ func TestHandler_Shorten(t *testing.T) {
 			expBody: `{"urx":"urx.io/xxxxxxxx"}`,
 		},
 		{
-			name: "URL is shortened with requestedURL",
-			s: &mockService{
-				shorten: func(ctx context.Context, URL, requestedURX string) (URX string, err error) {
-					return fmt.Sprintf("urx.io/%s", requestedURX), nil
-				},
-			},
-			requestedURX: "urx",
-			expCode:      http.StatusOK,
-			expBody:      `{"urx":"urx.io/urx"}`,
-		},
-		{
 			name: "invalid URL",
 			s: &mockService{
-				shorten: func(ctx context.Context, URL, requestedURX string) (URX string, err error) {
+				shorten: func(ctx context.Context, URL string) (URX string, err error) {
 					return "", service.ErrInvalidURL
 				},
 			},
@@ -70,7 +58,7 @@ func TestHandler_Shorten(t *testing.T) {
 		{
 			name: "unexpected error",
 			s: &mockService{
-				shorten: func(ctx context.Context, URL, requestedURX string) (URX string, err error) {
+				shorten: func(ctx context.Context, URL string) (URX string, err error) {
 					return "", errors.New("unexpected error")
 				},
 			},
@@ -84,7 +72,7 @@ func TestHandler_Shorten(t *testing.T) {
 			is := is.New(t)
 			h := NewHandler(tc.s)
 
-			r := httptest.NewRequest(http.MethodGet, "/api/v1/shorten?urx="+tc.requestedURX, nil)
+			r := httptest.NewRequest(http.MethodGet, "/api/v1/shorten", nil)
 			rr := httptest.NewRecorder()
 			h.ServeHTTP(rr, r)
 

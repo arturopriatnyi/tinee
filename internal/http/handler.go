@@ -13,7 +13,7 @@ import (
 
 // Service is urx service interface.
 type Service interface {
-	Shorten(ctx context.Context, URL, requestURX string) (URX string, err error)
+	Shorten(ctx context.Context, URL string) (URX string, err error)
 	FindURL(ctx context.Context, URX string) (URL string, err error)
 }
 
@@ -51,9 +51,9 @@ func (h *Handler) respond(w http.ResponseWriter, code int, data interface{}) {
 // Shorten is endpoint for shortening URLs.
 func (h *Handler) Shorten(w http.ResponseWriter, r *http.Request) {
 	URL := r.URL.Query().Get("url")
-	requestedURX := r.URL.Query().Get("urx")
-	URX, err := h.s.Shorten(r.Context(), URL, requestedURX)
-	if err == service.ErrInvalidURL || err == service.ErrRequestedURXTaken {
+
+	URX, err := h.s.Shorten(r.Context(), URL)
+	if err == service.ErrInvalidURL || err == service.ErrInvalidAlias {
 		h.respond(w, http.StatusBadRequest, map[string]interface{}{
 			"error": err.Error(),
 		})
