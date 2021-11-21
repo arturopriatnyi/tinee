@@ -13,27 +13,27 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-// Link is entity that connects URL and its alias.
+// Link is entity that connects URL and its aliases.
 type Link struct {
-	ID    string
-	URL   string
-	Alias string
+	ID      string
+	URL     string
+	Aliases []string
 }
 
 const (
-	// aliasAlphabet is string that contains all possible characters
+	// aliasAlphabet is a string that contains all possible characters
 	// for URL alias.
 	aliasAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 	// aliasLength is the length of generated alias.
 	aliasLength = 8
 )
 
-// NewLink creates and returns a new Link instance.
+// NewLink creates and returns a new Link instance with generated alias.
 func NewLink(URL string) Link {
 	alias := make([]byte, aliasLength)
 	for i := range alias {
 		alias[i] = aliasAlphabet[rand.Intn(len(aliasAlphabet))]
 	}
 
-	return Link{ID: uuid.New().String(), URL: URL, Alias: string(alias)}
+	return Link{ID: uuid.New().String(), URL: URL, Aliases: []string{string(alias)}}
 }

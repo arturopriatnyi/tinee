@@ -12,9 +12,9 @@ import (
 
 // Link is service.Link entity for the database.
 type Link struct {
-	ID    string `mongodb:"_id"`
-	URL   string `mongodb:"url"`
-	Alias string `mongodb:"alias"`
+	ID      string   `mongodb:"_id"`
+	URL     string   `mongodb:"url"`
+	Aliases []string `mongodb:"aliases"`
 }
 
 // LinkRepo is the link repository.
@@ -52,7 +52,7 @@ func (r *LinkRepo) FindByURL(ctx context.Context, URL string) (l service.Link, e
 
 // FindByAlias finds a Link by alias.
 func (r *LinkRepo) FindByAlias(ctx context.Context, alias string) (l service.Link, err error) {
-	err = r.links.FindOne(ctx, bson.M{"alias": alias}).Decode(&l)
+	err = r.links.FindOne(ctx, bson.M{"aliases": bson.M{"$in": []string{alias}}}).Decode(&l)
 	if err == mongo.ErrNoDocuments {
 		return l, service.ErrLinkNotFound
 	}
