@@ -18,6 +18,7 @@ type Config struct {
 	Service
 	MongoDB
 	HTTPServer
+	GRPCServer
 }
 
 // Service is configuration for service.
@@ -36,6 +37,11 @@ type MongoDB struct {
 // HTTPServer is configuration for HTTP server.
 type HTTPServer struct {
 	Addr string `envconfig:"HTTPSERVER_ADDR" default:":8080"`
+}
+
+// GRPCServer is configuration for gRPC server.
+type GRPCServer struct {
+	Addr string `envconfig:"GRPCSERVER_ADDR" default:":8081"`
 }
 
 // Get creates Config singleton instance and returns it.

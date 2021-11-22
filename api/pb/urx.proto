@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package urx;
+
+option go_package = "urx/pkg/pb";
+
+// API for shortening URLs.
+service URX {
+  // Shortens URL.
+  rpc Shorten(ShortenRequest) returns (ShortenResponse);
+}
+
+// Shortening URL request.
+message ShortenRequest {
+  // URL to shorten.
+  string url = 1;
+  // Optional custom alias for URL.
+  string alias = 2;
+}
+
+// Shortening URL response.
+message ShortenResponse {
+  // Shortened URL.
+  string urx = 1;
+}

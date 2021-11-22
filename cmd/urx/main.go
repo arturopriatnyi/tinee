@@ -3,17 +3,21 @@ package main
 import (
 	"context"
 	"log"
+	"net"
 	stdhttp "net/http"
 	"os"
 	"os/signal"
 	"time"
 
 	"go.uber.org/zap"
+	stdgrpc "google.golang.org/grpc"
 
 	"urx/internal/config"
+	"urx/internal/grpc"
 	"urx/internal/http"
 	"urx/internal/mongodb"
 	"urx/internal/service"
+	"urx/pkg/pb"
 )
 
 func main() {
@@ -34,18 +38,33 @@ func main() {
 	}
 	zap.L().Info("connected to MongoDB")
 
-	svc := service.New(mongodb.NewLinkRepo(mgo))
+	s := service.New(mongodb.NewLinkRepo(mgo))
 
-	s := &stdhttp.Server{
+	httpServer := &stdhttp.Server{
 		Addr:    cfg.HTTPServer.Addr,
-		Handler: http.NewHandler(svc),
+		Handler: http.NewHandler(s),
 	}
+
+	grpcServer := stdgrpc.NewServer()
+	pb.RegisterURXServer(grpcServer, grpc.NewHandler(s))
+	l, err := net.Listen("tcp", cfg.GRPCServer.Addr)
+	if err != nil {
+		zap.L().Fatal(err.Error())
+	}
+
 	go func() {
-		if err := s.ListenAndServe(); err != nil && err != stdhttp.ErrServerClosed {
-			zap.L().Fatal("couldn't start HTTP server")
+		if err := httpServer.ListenAndServe(); err != nil && err != stdhttp.ErrServerClosed {
+			zap.L().Fatal(err.Error())
 		}
 	}()
 	zap.S().Infof("starting HTTP server on %s", cfg.HTTPServer.Addr)
+
+	go func() {
+		if err := grpcServer.Serve(l); err != nil {
+			zap.L().Fatal(err.Error())
+		}
+	}()
+	zap.S().Infof("starting gRPC server on %s", cfg.GRPCServer.Addr)
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt)
@@ -53,10 +72,13 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := s.Shutdown(ctx); err != nil {
+	if err := httpServer.Shutdown(ctx); err != nil {
 		zap.L().Fatal("HTTP server couldn't shut down gracefully")
 	}
 	zap.L().Info("HTTP server shut down gracefully")
+
+	grpcServer.GracefulStop()
+	zap.L().Info("gRPC server shut down gracefully")
 
 	if err = mgo.Close(ctx); err != nil {
 		zap.L().Error("failed to disconnect from MongoDB")
