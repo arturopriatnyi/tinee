@@ -7,14 +7,15 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"go.uber.org/zap"
 
 	"urx/internal/service"
 )
 
 // Service is urx service interface.
 type Service interface {
-	Shorten(ctx context.Context, URL, requestURX string) (URX string, err error)
-	FindURL(ctx context.Context, URX string) (URL string, err error)
+	Shorten(ctx context.Context, URL, alias string) (URX string, err error)
+	URLByAlias(ctx context.Context, alias string) (URL string, err error)
 }
 
 // Handler is HTTP handler for urx.
@@ -28,7 +29,7 @@ func NewHandler(s Service) *Handler {
 	h := &Handler{r: chi.NewRouter(), s: s}
 
 	h.r.Get("/api/v1/shorten", h.Shorten)
-	h.r.Get("/{urx}", h.Redirect)
+	h.r.Get("/{alias}", h.Redirect)
 
 	return h
 }
@@ -51,13 +52,15 @@ func (h *Handler) respond(w http.ResponseWriter, code int, data interface{}) {
 // Shorten is endpoint for shortening URLs.
 func (h *Handler) Shorten(w http.ResponseWriter, r *http.Request) {
 	URL := r.URL.Query().Get("url")
-	requestedURX := r.URL.Query().Get("urx")
-	URX, err := h.s.Shorten(r.Context(), URL, requestedURX)
-	if err == service.ErrInvalidURL || err == service.ErrRequestedURXTaken {
+	alias := r.URL.Query().Get("alias")
+
+	URX, err := h.s.Shorten(r.Context(), URL, alias)
+	if err == service.ErrInvalidURL || err == service.ErrInvalidAlias {
 		h.respond(w, http.StatusBadRequest, map[string]interface{}{
 			"error": err.Error(),
 		})
 	} else if err != nil {
+		zap.L().Error(err.Error())
 		h.respond(w, http.StatusInternalServerError, nil)
 	} else {
 		h.respond(w, http.StatusOK, map[string]interface{}{
@@ -68,15 +71,15 @@ func (h *Handler) Shorten(w http.ResponseWriter, r *http.Request) {
 
 // Redirect is endpoint for redirecting URXs.
 func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
-	urx := chi.URLParam(r, "urx")
+	alias := chi.URLParam(r, "alias")
 
-	url, err := h.s.FindURL(r.Context(), urx)
-
+	URL, err := h.s.URLByAlias(r.Context(), alias)
 	if err == service.ErrLinkNotFound {
 		h.respond(w, http.StatusNotFound, nil)
 	} else if err != nil {
+		zap.L().Error(err.Error())
 		h.respond(w, http.StatusInternalServerError, nil)
 	} else {
-		http.Redirect(w, r, url, http.StatusSeeOther)
+		http.Redirect(w, r, URL, http.StatusSeeOther)
 	}
 }

@@ -5,36 +5,42 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"urx/internal/service"
 )
 
-const LinkCollectionName = "links"
-
-// Link is service.Link entity for database.
+// Link is service.Link entity for the database.
 type Link struct {
-	URL string `mongodb:"url"`
-	URX string `mongodb:"urx"`
+	ID      string   `mongodb:"_id"`
+	URL     string   `mongodb:"url"`
+	Aliases []string `mongodb:"aliases"`
 }
 
-// LinkRepo is link repository.
+// LinkRepo is the link repository.
 type LinkRepo struct {
 	links *mongo.Collection
 }
+
+// LinkCollectionName is the name of link collection.
+const LinkCollectionName = "links"
 
 // NewLinkRepo creates and returns a new LinkRepo instance.
 func NewLinkRepo(db *DB) *LinkRepo {
 	return &LinkRepo{links: db.Collection(LinkCollectionName)}
 }
 
-// Save saves Link to database.
+// Save saves a Link to the database.
 func (r *LinkRepo) Save(ctx context.Context, l service.Link) error {
-	_, err := r.links.InsertOne(ctx, Link(l))
+	opts := options.Update().SetUpsert(true)
+	filter := bson.M{"_id": l.ID}
+	update := bson.M{"$set": l}
 
+	_, err := r.links.UpdateOne(ctx, filter, update, opts)
 	return err
 }
 
-// FindByURL finds Link by URL.
+// FindByURL finds a Link by URL.
 func (r *LinkRepo) FindByURL(ctx context.Context, URL string) (l service.Link, err error) {
 	err = r.links.FindOne(ctx, bson.M{"url": URL}).Decode(&l)
 	if err == mongo.ErrNoDocuments {
@@ -44,9 +50,9 @@ func (r *LinkRepo) FindByURL(ctx context.Context, URL string) (l service.Link, e
 	return l, err
 }
 
-// FindByURX finds Link by URX.
-func (r *LinkRepo) FindByURX(ctx context.Context, URX string) (l service.Link, err error) {
-	err = r.links.FindOne(ctx, bson.M{"urx": URX}).Decode(&l)
+// FindByAlias finds a Link by alias.
+func (r *LinkRepo) FindByAlias(ctx context.Context, alias string) (l service.Link, err error) {
+	err = r.links.FindOne(ctx, bson.M{"aliases": bson.M{"$in": []string{alias}}}).Decode(&l)
 	if err == mongo.ErrNoDocuments {
 		return l, service.ErrLinkNotFound
 	}

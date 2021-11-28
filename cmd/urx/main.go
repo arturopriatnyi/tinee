@@ -38,7 +38,9 @@ func main() {
 	}
 	zap.L().Info("connected to MongoDB")
 
-	s := service.New(mongodb.NewLinkRepo(mgo))
+	r := mongodb.NewLinkRepo(mgo)
+
+	s := service.New(cfg.Service, r)
 
 	httpServer := &stdhttp.Server{
 		Addr:    cfg.HTTPServer.Addr,
@@ -73,7 +75,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := httpServer.Shutdown(ctx); err != nil {
-		zap.L().Fatal("HTTP server couldn't shut down gracefully")
+		zap.L().Fatal(err.Error())
 	}
 	zap.L().Info("HTTP server shut down gracefully")
 
@@ -81,7 +83,7 @@ func main() {
 	zap.L().Info("gRPC server shut down gracefully")
 
 	if err = mgo.Close(ctx); err != nil {
-		zap.L().Error("failed to disconnect from MongoDB")
+		zap.L().Error(err.Error())
 	}
 	zap.L().Info("disconnected from MongoDB")
 }

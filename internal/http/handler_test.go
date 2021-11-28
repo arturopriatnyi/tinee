@@ -15,52 +15,52 @@ import (
 )
 
 type mockService struct {
-	shorten func(ctx context.Context, URL, requestedURX string) (URX string, err error)
-	findURL func(ctx context.Context, URX string) (URL string, err error)
+	shorten    func(ctx context.Context, URL, alias string) (URX string, err error)
+	urlByAlias func(ctx context.Context, alias string) (URL string, err error)
 }
 
-func (s *mockService) Shorten(ctx context.Context, URL, requestedURX string) (URX string, err error) {
-	return s.shorten(ctx, URL, requestedURX)
+func (s *mockService) Shorten(ctx context.Context, URL, alias string) (URX string, err error) {
+	return s.shorten(ctx, URL, alias)
 }
 
-func (s *mockService) FindURL(ctx context.Context, URX string) (URL string, err error) {
-	return s.findURL(ctx, URX)
+func (s *mockService) URLByAlias(ctx context.Context, alias string) (URL string, err error) {
+	return s.urlByAlias(ctx, alias)
 }
 
 func TestHandler_Shorten(t *testing.T) {
 	testcases := []struct {
-		name         string
-		s            Service
-		url          string
-		requestedURX string
-		expCode      int
-		expBody      string
+		name        string
+		s           Service
+		queryParams string
+		expCode     int
+		expBody     string
 	}{
 		{
 			name: "URL is shortened",
 			s: &mockService{
-				shorten: func(ctx context.Context, URL, requestedURX string) (URX string, err error) {
+				shorten: func(ctx context.Context, URL, alias string) (URX string, err error) {
 					return "urx.io/xxxxxxxx", nil
 				},
 			},
-			expCode: http.StatusOK,
-			expBody: `{"urx":"urx.io/xxxxxxxx"}`,
+			queryParams: "?url=https://x.xx",
+			expCode:     http.StatusOK,
+			expBody:     `{"urx":"urx.io/xxxxxxxx"}`,
 		},
 		{
-			name: "URL is shortened with requestedURL",
+			name: "URL is shortened with custom alias",
 			s: &mockService{
-				shorten: func(ctx context.Context, URL, requestedURX string) (URX string, err error) {
-					return fmt.Sprintf("urx.io/%s", requestedURX), nil
+				shorten: func(ctx context.Context, URL, alias string) (URX string, err error) {
+					return fmt.Sprintf("urx.io/%s", alias), nil
 				},
 			},
-			requestedURX: "urx",
-			expCode:      http.StatusOK,
-			expBody:      `{"urx":"urx.io/urx"}`,
+			queryParams: "?url=https://x.xx&alias=xxxx",
+			expCode:     http.StatusOK,
+			expBody:     `{"urx":"urx.io/xxxx"}`,
 		},
 		{
 			name: "invalid URL",
 			s: &mockService{
-				shorten: func(ctx context.Context, URL, requestedURX string) (URX string, err error) {
+				shorten: func(ctx context.Context, URL, alias string) (URX string, err error) {
 					return "", service.ErrInvalidURL
 				},
 			},
@@ -68,14 +68,23 @@ func TestHandler_Shorten(t *testing.T) {
 			expBody: `{"error":"invalid URL"}`,
 		},
 		{
+			name: "invalid alias",
+			s: &mockService{
+				shorten: func(ctx context.Context, URL, alias string) (URX string, err error) {
+					return "", service.ErrInvalidAlias
+				},
+			},
+			expCode: http.StatusBadRequest,
+			expBody: `{"error":"invalid alias"}`,
+		},
+		{
 			name: "unexpected error",
 			s: &mockService{
-				shorten: func(ctx context.Context, URL, requestedURX string) (URX string, err error) {
+				shorten: func(ctx context.Context, URL, alias string) (URX string, err error) {
 					return "", errors.New("unexpected error")
 				},
 			},
 			expCode: http.StatusInternalServerError,
-			expBody: ``,
 		},
 	}
 
@@ -84,7 +93,7 @@ func TestHandler_Shorten(t *testing.T) {
 			is := is.New(t)
 			h := NewHandler(tc.s)
 
-			r := httptest.NewRequest(http.MethodGet, "/api/v1/shorten?urx="+tc.requestedURX, nil)
+			r := httptest.NewRequest(http.MethodGet, "/api/v1/shorten"+tc.queryParams, nil)
 			rr := httptest.NewRecorder()
 			h.ServeHTTP(rr, r)
 
@@ -99,20 +108,22 @@ func TestHandler_Redirect(t *testing.T) {
 		name    string
 		s       Service
 		expCode int
+		expURL  string
 	}{
 		{
-			name: "URX redirected",
+			name: "URX redirected to actual URL",
 			s: &mockService{
-				findURL: func(ctx context.Context, URX string) (URL string, err error) {
-					return "https://xxxxxxxxxx.xxx/xxx?x=x", nil
+				urlByAlias: func(ctx context.Context, alias string) (URL string, err error) {
+					return "https://x.xx", nil
 				},
 			},
 			expCode: http.StatusSeeOther,
+			expURL:  "https://x.xx",
 		},
 		{
 			name: "URX not found",
 			s: &mockService{
-				findURL: func(ctx context.Context, URX string) (URL string, err error) {
+				urlByAlias: func(ctx context.Context, alias string) (URL string, err error) {
 					return "", service.ErrLinkNotFound
 				},
 			},
@@ -121,7 +132,7 @@ func TestHandler_Redirect(t *testing.T) {
 		{
 			name: "unexpected error",
 			s: &mockService{
-				findURL: func(ctx context.Context, URX string) (URL string, err error) {
+				urlByAlias: func(ctx context.Context, alias string) (URL string, err error) {
 					return "", errors.New("unexpected error")
 				},
 			},
@@ -134,11 +145,14 @@ func TestHandler_Redirect(t *testing.T) {
 			is := is.New(t)
 			h := NewHandler(tc.s)
 
-			r := httptest.NewRequest(http.MethodGet, "/urx", nil)
+			r := httptest.NewRequest(http.MethodGet, "/alias", nil)
 			rr := httptest.NewRecorder()
 			h.ServeHTTP(rr, r)
 
 			is.Equal(tc.expCode, rr.Code)
+			if tc.expCode == http.StatusSeeOther {
+				is.Equal(tc.expURL, rr.Header().Get("Location"))
+			}
 		})
 	}
 }

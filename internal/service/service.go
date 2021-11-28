@@ -4,19 +4,36 @@ package service
 
 import (
 	"context"
-	"crypto/rand"
 	"errors"
 	"fmt"
-	"net/url"
+	"regexp"
 
 	"urx/internal/config"
 )
 
-// LinkRepo is link repository.
+const (
+	// URLRegExp is regular expression pattern for URL.
+	URLRegExp = "^(?:http(s)?:\\/\\/)[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$"
+	// GeneratedAliasRegExp is regular expression pattern for generated aliases.
+	GeneratedAliasRegExp = "^[A-Za-z0-9]{8}$"
+	// CustomAliasRegExp is regular expression pattern for custom aliases.
+	CustomAliasRegExp = "^[A-Za-z0-9]{4,}$"
+)
+
+var (
+	// ErrInvalidURL is returned when invalid URL was provided.
+	ErrInvalidURL = errors.New("invalid URL")
+	// ErrInvalidAlias is returned when invalid alias was provided.
+	ErrInvalidAlias = errors.New("invalid alias")
+	// ErrLinkNotFound is returned when link was not found in store.
+	ErrLinkNotFound = errors.New("link not found")
+)
+
+// LinkRepo is link repository interface.
 type LinkRepo interface {
-	Save(ctx context.Context, link Link) error
-	FindByURL(ctx context.Context, URL string) (Link, error)
-	FindByURX(ctx context.Context, URX string) (Link, error)
+	Save(context.Context, Link) error
+	FindByURL(context.Context, string) (Link, error)
+	FindByAlias(context.Context, string) (Link, error)
 }
 
 // Service is URL shortening service.
@@ -26,76 +43,83 @@ type Service struct {
 }
 
 // New creates and returns a new Service instance.
-func New(r LinkRepo) *Service {
-	return &Service{cfg: config.Get().Service, r: r}
+func New(cfg config.Service, r LinkRepo) *Service {
+	return &Service{cfg: cfg, r: r}
 }
 
-var (
-	// ErrInvalidURL is returned when invalid URL was provided.
-	ErrInvalidURL = errors.New("invalid URL")
-	// ErrLinkNotFound is returned when link was not found in store.
-	ErrLinkNotFound = errors.New("link not found")
-	// ErrRequestedURXTaken is returned when requested URX is already taken.
-	ErrRequestedURXTaken = errors.New("requested URX is taken")
-	// ErrGeneratingURX is returned when error occurred while generating URX.
-	ErrGeneratingURX = errors.New("couldn't generate URX")
-)
-
 // Shorten shortens provided URL.
-func (s *Service) Shorten(ctx context.Context, URL, requestedURX string) (URX string, err error) {
-	if _, err = url.ParseRequestURI(URL); err != nil {
-		return "", ErrInvalidURL
-	}
-
-	if l, err := s.r.FindByURL(ctx, URL); err == nil {
-		return s.buildURX(l.URX), nil
-	}
-
-	if requestedURX != "" {
-		if _, err := s.r.FindByURX(ctx, requestedURX); err == nil {
-			return "", ErrRequestedURXTaken
-		}
-
-		return s.buildURX(requestedURX), s.r.Save(ctx, Link{URL: URL, URX: requestedURX})
-	}
-
-	if URX, err = s.generateURX(ctx); err != nil {
+func (s *Service) Shorten(ctx context.Context, URL, alias string) (URX string, err error) {
+	if err = s.ValidateURL(URL); err != nil {
 		return "", err
 	}
 
-	return s.buildURX(URX), s.r.Save(ctx, Link{URL: URL, URX: URX})
+	link, err := s.r.FindByURL(ctx, URL)
+	if err == ErrLinkNotFound {
+		link, err = s.CreateLink(ctx, URL)
+		if err != nil {
+			return "", err
+		}
+	} else if err != nil {
+		return "", err
+	}
+
+	if alias == "" {
+		return s.URX(link.Aliases[0]), nil
+	}
+
+	if err = s.ValidateCustomAlias(alias); err != nil {
+		return "", err
+	}
+	l, err := s.r.FindByAlias(ctx, alias)
+	if err == ErrLinkNotFound {
+		link.Aliases = append(link.Aliases, alias)
+	} else if err == nil && link.ID != l.ID {
+		return "", ErrInvalidAlias
+	} else if err != nil {
+		return "", err
+	}
+
+	return s.URX(alias), s.r.Save(ctx, link)
 }
 
-// FindURL finds URL by URX.
-func (s *Service) FindURL(ctx context.Context, URX string) (URL string, err error) {
-	l, err := s.r.FindByURX(ctx, URX)
+// URLByAlias returns URL by alias.
+func (s *Service) URLByAlias(ctx context.Context, alias string) (URL string, err error) {
+	l, err := s.r.FindByAlias(ctx, alias)
 
 	return l.URL, err
 }
 
-func (s *Service) buildURX(URX string) string {
-	return fmt.Sprintf("%s/%s", s.cfg.Domain, URX)
-}
-
-// generateURX generates random URX.
-func (s *Service) generateURX(ctx context.Context) (urx string, err error) {
-	bytes := make([]byte, 4)
-
-	i := 0
-	for {
-		if _, err = rand.Read(bytes); err != nil {
-			return "", err
-		}
-		urx = fmt.Sprintf("%x", bytes)
-
-		if _, err = s.r.FindByURX(ctx, urx); err == ErrLinkNotFound {
-			break
-		}
-
-		if i++; i >= 10 {
-			return "", ErrGeneratingURX
-		}
+// CreateLink creates a Link with provided URL and generated alias.
+func (s *Service) CreateLink(ctx context.Context, URL string) (l Link, err error) {
+	l = NewLink(URL)
+	if _, err = s.r.FindByAlias(ctx, l.Aliases[0]); err == nil {
+		return Link{}, ErrInvalidAlias
+	} else if err != nil && err != ErrLinkNotFound {
+		return Link{}, err
 	}
 
-	return urx, nil
+	return l, s.r.Save(ctx, l)
+}
+
+// URX forms URX with provided alias.
+func (s *Service) URX(alias string) string {
+	return fmt.Sprintf("%s/%s", s.cfg.Domain, alias)
+}
+
+// ValidateURL validates URL.
+func (s *Service) ValidateURL(URL string) error {
+	if matched, err := regexp.MatchString(URLRegExp, URL); err != nil || !matched {
+		return ErrInvalidURL
+	}
+
+	return nil
+}
+
+// ValidateCustomAlias validates custom alias.
+func (s *Service) ValidateCustomAlias(alias string) error {
+	if matched, err := regexp.MatchString(CustomAliasRegExp, alias); err != nil || !matched {
+		return ErrInvalidAlias
+	}
+
+	return nil
 }

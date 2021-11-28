@@ -10,7 +10,7 @@ import (
 // Service is urx service interface.
 type Service interface {
 	Shorten(ctx context.Context, URL, alias string) (URX string, err error)
-	FindURL(ctx context.Context, URX string) (URL string, err error)
+	URLByAlias(ctx context.Context, alias string) (URL string, err error)
 }
 
 // Handler is gRPC handler.
