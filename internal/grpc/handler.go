@@ -25,7 +25,14 @@ func NewHandler(s Service) *Handler {
 
 // Shorten shortens URL.
 func (h *Handler) Shorten(ctx context.Context, r *pb.ShortenRequest) (*pb.ShortenResponse, error) {
-	URX, err := h.s.Shorten(ctx, r.Url, r.Alias)
+	URX, err := h.s.Shorten(ctx, r.GetUrl(), r.GetAlias())
 
 	return &pb.ShortenResponse{Urx: URX}, err
+}
+
+// UrlByAlias returns URL that corresponds to alias in request.
+func (h *Handler) UrlByAlias(ctx context.Context, r *pb.UrlByAliasRequest) (*pb.UrlByAliasResponse, error) {
+	URL, err := h.s.URLByAlias(ctx, r.GetAlias())
+
+	return &pb.UrlByAliasResponse{Url: URL}, err
 }

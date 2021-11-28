@@ -8,6 +8,8 @@ option go_package = "urx/pkg/pb";
 service URX {
   // Shortens URL.
   rpc Shorten(ShortenRequest) returns (ShortenResponse);
+  // Returns URL that corresponds to alias from request.
+  rpc UrlByAlias(UrlByAliasRequest) returns (UrlByAliasResponse);
 }
 
 // Shortening URL request.
@@ -22,4 +24,16 @@ message ShortenRequest {
 message ShortenResponse {
   // Shortened URL.
   string urx = 1;
+}
+
+// Retrieving URL by alias request.
+message UrlByAliasRequest {
+  // Alias of the URL.
+  string alias = 1;
+}
+
+// Retrieving URL by alias response.
+message UrlByAliasResponse {
+  // URL alias corresponds to.
+  string url = 2;
 }
