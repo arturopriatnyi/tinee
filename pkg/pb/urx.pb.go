@@ -24,12 +24,15 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Shortening URL request.
 type ShortenRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Url   string `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	// URL to shorten.
+	Url string `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	// Optional custom alias for URL.
 	Alias string `protobuf:"bytes,2,opt,name=alias,proto3" json:"alias,omitempty"`
 }
 
@@ -79,11 +82,13 @@ func (x *ShortenRequest) GetAlias() string {
 	return ""
 }
 
+// Shortening URL response.
 type ShortenResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Shortened URL.
 	Urx string `protobuf:"bytes,1,opt,name=urx,proto3" json:"urx,omitempty"`
 }
 
@@ -126,6 +131,104 @@ func (x *ShortenResponse) GetUrx() string {
 	return ""
 }
 
+// Retrieving URL by alias request.
+type UrlByAliasRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Alias of the URL.
+	Alias string `protobuf:"bytes,1,opt,name=alias,proto3" json:"alias,omitempty"`
+}
+
+func (x *UrlByAliasRequest) Reset() {
+	*x = UrlByAliasRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_urx_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UrlByAliasRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UrlByAliasRequest) ProtoMessage() {}
+
+func (x *UrlByAliasRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_urx_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UrlByAliasRequest.ProtoReflect.Descriptor instead.
+func (*UrlByAliasRequest) Descriptor() ([]byte, []int) {
+	return file_urx_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *UrlByAliasRequest) GetAlias() string {
+	if x != nil {
+		return x.Alias
+	}
+	return ""
+}
+
+// Retrieving URL by alias response.
+type UrlByAliasResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// URL alias corresponds to.
+	Url string `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
+}
+
+func (x *UrlByAliasResponse) Reset() {
+	*x = UrlByAliasResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_urx_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UrlByAliasResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UrlByAliasResponse) ProtoMessage() {}
+
+func (x *UrlByAliasResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_urx_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UrlByAliasResponse.ProtoReflect.Descriptor instead.
+func (*UrlByAliasResponse) Descriptor() ([]byte, []int) {
+	return file_urx_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *UrlByAliasResponse) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
 var File_urx_proto protoreflect.FileDescriptor
 
 var file_urx_proto_rawDesc = []byte{
@@ -135,13 +238,22 @@ var file_urx_proto_rawDesc = []byte{
 	0x03, 0x75, 0x72, 0x6c, 0x12, 0x14, 0x0a, 0x05, 0x61, 0x6c, 0x69, 0x61, 0x73, 0x18, 0x02, 0x20,
 	0x01, 0x28, 0x09, 0x52, 0x05, 0x61, 0x6c, 0x69, 0x61, 0x73, 0x22, 0x23, 0x0a, 0x0f, 0x53, 0x68,
 	0x6f, 0x72, 0x74, 0x65, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x10, 0x0a,
-	0x03, 0x75, 0x72, 0x78, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72, 0x78, 0x32,
-	0x3b, 0x0a, 0x03, 0x55, 0x52, 0x58, 0x12, 0x34, 0x0a, 0x07, 0x53, 0x68, 0x6f, 0x72, 0x74, 0x65,
-	0x6e, 0x12, 0x13, 0x2e, 0x75, 0x72, 0x78, 0x2e, 0x53, 0x68, 0x6f, 0x72, 0x74, 0x65, 0x6e, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14, 0x2e, 0x75, 0x72, 0x78, 0x2e, 0x53, 0x68, 0x6f,
-	0x72, 0x74, 0x65, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x0c, 0x5a, 0x0a,
-	0x75, 0x72, 0x78, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x03, 0x75, 0x72, 0x78, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72, 0x78, 0x22,
+	0x29, 0x0a, 0x11, 0x55, 0x72, 0x6c, 0x42, 0x79, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x61, 0x6c, 0x69, 0x61, 0x73, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x05, 0x61, 0x6c, 0x69, 0x61, 0x73, 0x22, 0x26, 0x0a, 0x12, 0x55, 0x72,
+	0x6c, 0x42, 0x79, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75,
+	0x72, 0x6c, 0x32, 0x7a, 0x0a, 0x03, 0x55, 0x52, 0x58, 0x12, 0x34, 0x0a, 0x07, 0x53, 0x68, 0x6f,
+	0x72, 0x74, 0x65, 0x6e, 0x12, 0x13, 0x2e, 0x75, 0x72, 0x78, 0x2e, 0x53, 0x68, 0x6f, 0x72, 0x74,
+	0x65, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14, 0x2e, 0x75, 0x72, 0x78, 0x2e,
+	0x53, 0x68, 0x6f, 0x72, 0x74, 0x65, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x3d, 0x0a, 0x0a, 0x55, 0x72, 0x6c, 0x42, 0x79, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x12, 0x16, 0x2e,
+	0x75, 0x72, 0x78, 0x2e, 0x55, 0x72, 0x6c, 0x42, 0x79, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x17, 0x2e, 0x75, 0x72, 0x78, 0x2e, 0x55, 0x72, 0x6c, 0x42,
+	0x79, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x0c,
+	0x5a, 0x0a, 0x75, 0x72, 0x78, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -156,16 +268,20 @@ func file_urx_proto_rawDescGZIP() []byte {
 	return file_urx_proto_rawDescData
 }
 
-var file_urx_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_urx_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_urx_proto_goTypes = []interface{}{
-	(*ShortenRequest)(nil),  // 0: urx.ShortenRequest
-	(*ShortenResponse)(nil), // 1: urx.ShortenResponse
+	(*ShortenRequest)(nil),     // 0: urx.ShortenRequest
+	(*ShortenResponse)(nil),    // 1: urx.ShortenResponse
+	(*UrlByAliasRequest)(nil),  // 2: urx.UrlByAliasRequest
+	(*UrlByAliasResponse)(nil), // 3: urx.UrlByAliasResponse
 }
 var file_urx_proto_depIdxs = []int32{
 	0, // 0: urx.URX.Shorten:input_type -> urx.ShortenRequest
-	1, // 1: urx.URX.Shorten:output_type -> urx.ShortenResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	2, // 1: urx.URX.UrlByAlias:input_type -> urx.UrlByAliasRequest
+	1, // 2: urx.URX.Shorten:output_type -> urx.ShortenResponse
+	3, // 3: urx.URX.UrlByAlias:output_type -> urx.UrlByAliasResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -201,6 +317,30 @@ func file_urx_proto_init() {
 				return nil
 			}
 		}
+		file_urx_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UrlByAliasRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_urx_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UrlByAliasResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -208,7 +348,7 @@ func file_urx_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_urx_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -234,7 +374,9 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type URXClient interface {
+	// Shortens URL.
 	Shorten(ctx context.Context, in *ShortenRequest, opts ...grpc.CallOption) (*ShortenResponse, error)
+	UrlByAlias(ctx context.Context, in *UrlByAliasRequest, opts ...grpc.CallOption) (*UrlByAliasResponse, error)
 }
 
 type uRXClient struct {
@@ -254,9 +396,20 @@ func (c *uRXClient) Shorten(ctx context.Context, in *ShortenRequest, opts ...grp
 	return out, nil
 }
 
+func (c *uRXClient) UrlByAlias(ctx context.Context, in *UrlByAliasRequest, opts ...grpc.CallOption) (*UrlByAliasResponse, error) {
+	out := new(UrlByAliasResponse)
+	err := c.cc.Invoke(ctx, "/urx.URX/UrlByAlias", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // URXServer is the server API for URX service.
 type URXServer interface {
+	// Shortens URL.
 	Shorten(context.Context, *ShortenRequest) (*ShortenResponse, error)
+	UrlByAlias(context.Context, *UrlByAliasRequest) (*UrlByAliasResponse, error)
 }
 
 // UnimplementedURXServer can be embedded to have forward compatible implementations.
@@ -265,6 +418,9 @@ type UnimplementedURXServer struct {
 
 func (*UnimplementedURXServer) Shorten(context.Context, *ShortenRequest) (*ShortenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Shorten not implemented")
+}
+func (*UnimplementedURXServer) UrlByAlias(context.Context, *UrlByAliasRequest) (*UrlByAliasResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UrlByAlias not implemented")
 }
 
 func RegisterURXServer(s *grpc.Server, srv URXServer) {
@@ -289,6 +445,24 @@ func _URX_Shorten_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _URX_UrlByAlias_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UrlByAliasRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(URXServer).UrlByAlias(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/urx.URX/UrlByAlias",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(URXServer).UrlByAlias(ctx, req.(*UrlByAliasRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _URX_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "urx.URX",
 	HandlerType: (*URXServer)(nil),
@@ -296,6 +470,10 @@ var _URX_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Shorten",
 			Handler:    _URX_Shorten_Handler,
+		},
+		{
+			MethodName: "UrlByAlias",
+			Handler:    _URX_UrlByAlias_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
