@@ -15,11 +15,8 @@ func TestNewLink(t *testing.T) {
 
 	_, err := uuid.Parse(l.ID)
 	is.NoErr(err)
-
 	is.Equal("x.xx", l.URL)
-
-	matched, err := regexp.MatchString(GeneratedAliasRegExp, l.Aliases[0])
-	if err != nil || !matched {
+	if matched, err := regexp.MatchString(GeneratedAliasRegExp, l.Aliases[0]); err != nil || !matched {
 		t.Errorf("invalid alias: %v", l.Aliases[0])
 	}
 }

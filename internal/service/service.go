@@ -14,10 +14,10 @@ import (
 const (
 	// URLRegExp is regular expression pattern for URL.
 	URLRegExp = "^(?:http(s)?:\\/\\/)[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$"
-	// GeneratedAliasRegExp is regular expression patter for generated aliases.
-	GeneratedAliasRegExp = "^[a-zA-Z0-9]{8}$"
+	// GeneratedAliasRegExp is regular expression pattern for generated aliases.
+	GeneratedAliasRegExp = "^[A-Za-z0-9]{8}$"
 	// CustomAliasRegExp is regular expression pattern for custom aliases.
-	CustomAliasRegExp = "^[a-zA-Z0-9]{4,}$"
+	CustomAliasRegExp = "^[A-Za-z0-9]{4,}$"
 )
 
 var (
@@ -67,7 +67,7 @@ func (s *Service) Shorten(ctx context.Context, URL, alias string) (URX string, e
 		return s.URX(link.Aliases[0]), nil
 	}
 
-	if err = s.ValidateAlias(alias); err != nil {
+	if err = s.ValidateCustomAlias(alias); err != nil {
 		return "", err
 	}
 	l, err := s.r.FindByAlias(ctx, alias)
@@ -115,8 +115,8 @@ func (s *Service) ValidateURL(URL string) error {
 	return nil
 }
 
-// ValidateAlias validates alias.
-func (s *Service) ValidateAlias(alias string) error {
+// ValidateCustomAlias validates custom alias.
+func (s *Service) ValidateCustomAlias(alias string) error {
 	if matched, err := regexp.MatchString(CustomAliasRegExp, alias); err != nil || !matched {
 		return ErrInvalidAlias
 	}

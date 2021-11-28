@@ -68,6 +68,16 @@ func TestHandler_Shorten(t *testing.T) {
 			expBody: `{"error":"invalid URL"}`,
 		},
 		{
+			name: "invalid alias",
+			s: &mockService{
+				shorten: func(ctx context.Context, URL, alias string) (URX string, err error) {
+					return "", service.ErrInvalidAlias
+				},
+			},
+			expCode: http.StatusBadRequest,
+			expBody: `{"error":"invalid alias"}`,
+		},
+		{
 			name: "unexpected error",
 			s: &mockService{
 				shorten: func(ctx context.Context, URL, alias string) (URX string, err error) {
@@ -75,7 +85,6 @@ func TestHandler_Shorten(t *testing.T) {
 				},
 			},
 			expCode: http.StatusInternalServerError,
-			expBody: ``,
 		},
 	}
 
@@ -99,15 +108,17 @@ func TestHandler_Redirect(t *testing.T) {
 		name    string
 		s       Service
 		expCode int
+		expURL  string
 	}{
 		{
-			name: "URX redirected",
+			name: "URX redirected to actual URL",
 			s: &mockService{
 				urlByAlias: func(ctx context.Context, alias string) (URL string, err error) {
 					return "https://x.xx", nil
 				},
 			},
 			expCode: http.StatusSeeOther,
+			expURL:  "https://x.xx",
 		},
 		{
 			name: "URX not found",
@@ -139,6 +150,9 @@ func TestHandler_Redirect(t *testing.T) {
 			h.ServeHTTP(rr, r)
 
 			is.Equal(tc.expCode, rr.Code)
+			if tc.expCode == http.StatusSeeOther {
+				is.Equal(tc.expURL, rr.Header().Get("Location"))
+			}
 		})
 	}
 }

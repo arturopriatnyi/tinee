@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"go.uber.org/zap"
 
 	"urx/internal/service"
 )
@@ -14,7 +15,7 @@ import (
 // Service is urx service interface.
 type Service interface {
 	Shorten(ctx context.Context, URL, alias string) (URX string, err error)
-	URLByAlias(ctx context.Context, Alias string) (URL string, err error)
+	URLByAlias(ctx context.Context, alias string) (URL string, err error)
 }
 
 // Handler is HTTP handler for urx.
@@ -59,6 +60,7 @@ func (h *Handler) Shorten(w http.ResponseWriter, r *http.Request) {
 			"error": err.Error(),
 		})
 	} else if err != nil {
+		zap.L().Error(err.Error())
 		h.respond(w, http.StatusInternalServerError, nil)
 	} else {
 		h.respond(w, http.StatusOK, map[string]interface{}{
@@ -75,6 +77,7 @@ func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 	if err == service.ErrLinkNotFound {
 		h.respond(w, http.StatusNotFound, nil)
 	} else if err != nil {
+		zap.L().Error(err.Error())
 		h.respond(w, http.StatusInternalServerError, nil)
 	} else {
 		http.Redirect(w, r, URL, http.StatusSeeOther)

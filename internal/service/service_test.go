@@ -12,9 +12,9 @@ import (
 )
 
 type mockLinkRepo struct {
-	save        func(ctx context.Context, link Link) error
-	findByURL   func(ctx context.Context, URL string) (Link, error)
-	findByAlias func(ctx context.Context, alias string) (Link, error)
+	save        func(context.Context, Link) error
+	findByURL   func(context.Context, string) (Link, error)
+	findByAlias func(context.Context, string) (Link, error)
 }
 
 func (r *mockLinkRepo) Save(ctx context.Context, link Link) error {
@@ -46,7 +46,7 @@ func TestService_Shorten(t *testing.T) {
 		expErr error
 	}{
 		{
-			name: "URL is shortened",
+			name: "URL is shortened with generated alias",
 			r: &mockLinkRepo{
 				findByURL: func(ctx context.Context, url string) (Link, error) {
 					return Link{}, ErrLinkNotFound
@@ -59,7 +59,6 @@ func TestService_Shorten(t *testing.T) {
 				},
 			},
 			url:    "https://x.xx",
-			alias:  "",
 			expErr: nil,
 		},
 		{
@@ -85,18 +84,20 @@ func TestService_Shorten(t *testing.T) {
 			expErr: ErrInvalidURL,
 		},
 		{
-			name: "find by URL unexpected error",
+			name: "FindByAlias invalid alias error while creating link",
 			r: &mockLinkRepo{
 				findByURL: func(ctx context.Context, url string) (Link, error) {
-					return Link{}, errors.New("unexpected error")
+					return Link{}, ErrLinkNotFound
+				},
+				findByAlias: func(ctx context.Context, alias string) (Link, error) {
+					return Link{}, nil
 				},
 			},
 			url:    "https://x.xx",
-			alias:  "xxxx",
-			expErr: errors.New("unexpected error"),
+			expErr: ErrInvalidAlias,
 		},
 		{
-			name: "unexpected error in FindByAlias while creating task",
+			name: "FindByAlias unexpected error while creating link",
 			r: &mockLinkRepo{
 				findByURL: func(ctx context.Context, url string) (Link, error) {
 					return Link{}, ErrLinkNotFound
@@ -106,25 +107,17 @@ func TestService_Shorten(t *testing.T) {
 				},
 			},
 			url:    "https://x.xx",
-			alias:  "xxxx",
 			expErr: errors.New("unexpected error"),
 		},
 		{
-			name: "alias is taken while creating task",
+			name: "FindByURL unexpected error",
 			r: &mockLinkRepo{
 				findByURL: func(ctx context.Context, url string) (Link, error) {
-					return Link{}, ErrLinkNotFound
-				},
-				findByAlias: func(ctx context.Context, alias string) (Link, error) {
-					if alias == "xxxx" {
-						return Link{}, nil
-					}
-					return Link{}, nil
+					return Link{}, errors.New("unexpected error")
 				},
 			},
 			url:    "https://x.xx",
-			alias:  "xxxx",
-			expErr: ErrInvalidAlias,
+			expErr: errors.New("unexpected error"),
 		},
 		{
 			name: "invalid custom alias",
@@ -140,16 +133,17 @@ func TestService_Shorten(t *testing.T) {
 				},
 			},
 			url:    "https://x.xx",
-			alias:  "xxx",
+			alias:  "x",
 			expErr: ErrInvalidAlias,
 		},
 		{
-			name: "custom alias is taken by other link",
+			name: "FindByAlias invalid alias error while adding custom alias",
 			r: &mockLinkRepo{
 				findByURL: func(ctx context.Context, url string) (Link, error) {
 					return Link{}, ErrLinkNotFound
 				},
 				findByAlias: func(ctx context.Context, alias string) (Link, error) {
+					// "xxxx" alias is already taken
 					if alias == "xxxx" {
 						return Link{ID: "x-x-x-x"}, nil
 					}
@@ -165,14 +159,14 @@ func TestService_Shorten(t *testing.T) {
 			expErr: ErrInvalidAlias,
 		},
 		{
-			name: "find by alias unexpected error while setting custom alias",
+			name: "FindByAlias unexpected error while adding custom alias",
 			r: &mockLinkRepo{
 				findByURL: func(ctx context.Context, url string) (Link, error) {
 					return Link{}, ErrLinkNotFound
 				},
 				findByAlias: func(ctx context.Context, alias string) (Link, error) {
 					if alias == "xxxx" {
-						return Link{ID: "x-x-x-x"}, errors.New("unexpected error")
+						return Link{}, errors.New("unexpected error")
 					}
 
 					return Link{}, ErrLinkNotFound
@@ -190,12 +184,13 @@ func TestService_Shorten(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			is := is.New(t)
+			s := New(config.Service{}, tc.r)
 
-			urx, err := New(config.Service{}, tc.r).Shorten(context.Background(), tc.url, tc.alias)
+			urx, err := s.Shorten(context.Background(), tc.url, tc.alias)
 
 			is.Equal(tc.expErr, err)
-			matched, _ := regexp.MatchString(`/[a-zA-Z0-9]{8}`, urx)
-			if tc.expErr == nil && tc.alias == "" && !matched {
+			matched, err := regexp.MatchString(`/[a-zA-Z0-9]`, urx)
+			if tc.expErr == nil && (err != nil || !matched) {
 				t.Errorf("invalid URX: %s", urx)
 			}
 		})
@@ -214,21 +209,162 @@ func TestService_URLByAlias(t *testing.T) {
 			name: "URL is found",
 			r: &mockLinkRepo{
 				findByAlias: func(ctx context.Context, URX string) (Link, error) {
-					return Link{URL: "https://xxxxxxxxxx.xxx/xxxxxxxx"}, nil
+					return Link{URL: "https://x.xx"}, nil
 				},
 			},
 			urx:    "xxxxxxxx",
-			expUrl: "https://xxxxxxxxxx.xxx/xxxxxxxx",
-			expErr: nil,
+			expUrl: "https://x.xx",
 		},
 	}
 
 	for _, tc := range testcases {
-		is := is.New(t)
+		t.Run(tc.name, func(t *testing.T) {
+			is := is.New(t)
+			s := New(config.Service{}, tc.r)
 
-		url, err := New(config.Service{}, tc.r).URLByAlias(context.Background(), tc.urx)
+			url, err := s.URLByAlias(context.Background(), tc.urx)
 
-		is.Equal(tc.expUrl, url)
-		is.Equal(tc.expErr, err)
+			is.Equal(tc.expErr, err)
+			is.Equal(tc.expUrl, url)
+		})
+	}
+}
+
+func TestService_CreateLink(t *testing.T) {
+	testcases := []struct {
+		name   string
+		r      *mockLinkRepo
+		url    string
+		expErr error
+	}{
+		{
+			name: "link is created",
+			r: &mockLinkRepo{
+				findByAlias: func(ctx context.Context, alias string) (Link, error) {
+					return Link{}, ErrLinkNotFound
+				},
+				save: func(ctx context.Context, link Link) error {
+					return nil
+				},
+			},
+			url: "https://x.xx",
+		},
+		{
+			name: "invalid alias error",
+			r: &mockLinkRepo{
+				findByAlias: func(ctx context.Context, alias string) (Link, error) {
+					return Link{}, nil
+				},
+			},
+			url:    "https://x.xx",
+			expErr: ErrInvalidAlias,
+		},
+		{
+			name: "unexpected error",
+			r: &mockLinkRepo{
+				findByAlias: func(ctx context.Context, alias string) (Link, error) {
+					return Link{}, errors.New("unexpected error")
+				},
+			},
+			url:    "https://x.xx",
+			expErr: errors.New("unexpected error"),
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			is := is.New(t)
+			s := New(config.Service{}, tc.r)
+
+			l, err := s.CreateLink(context.Background(), tc.url)
+
+			is.Equal(tc.expErr, err)
+			if tc.expErr == nil && l.ID == "" {
+				t.Errorf("invalid link: %v", l)
+			}
+		})
+	}
+}
+
+func TestService_URX(t *testing.T) {
+	is := is.New(t)
+	s := New(config.Service{Domain: "urx.io"}, nil)
+
+	is.Equal("urx.io/xxxx", s.URX("xxxx"))
+}
+
+func TestService_ValidateURL(t *testing.T) {
+	testcases := []struct {
+		name   string
+		url    string
+		expErr error
+	}{
+		{
+			name:   "url is valid with https",
+			url:    "https://x.xx",
+			expErr: nil,
+		},
+		{
+			name:   "url is valid with http",
+			url:    "http://x.xx",
+			expErr: nil,
+		},
+		{
+			name:   "url is not valid without schema",
+			url:    "x.xx",
+			expErr: ErrInvalidURL,
+		},
+		{
+			name:   "url is not valid without domain",
+			url:    "https://x",
+			expErr: ErrInvalidURL,
+		},
+		{
+			name:   "url is not valid without valid domain",
+			url:    "http://x.x",
+			expErr: ErrInvalidURL,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			is := is.New(t)
+			s := New(config.Service{}, nil)
+
+			is.Equal(tc.expErr, s.ValidateURL(tc.url))
+		})
+	}
+}
+
+func TestService_ValidateCustomAlias(t *testing.T) {
+	testcases := []struct {
+		name   string
+		alias  string
+		expErr error
+	}{
+		{
+			name:   "alias is valid",
+			alias:  "xxxx",
+			expErr: nil,
+		},
+		{
+			name:   "alias is too short",
+			alias:  "xxx",
+			expErr: ErrInvalidAlias,
+		},
+		{
+			name:   "alias contains not allowed characters",
+			alias:  "$xxx",
+			expErr: ErrInvalidAlias,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			is := is.New(t)
+			s := New(config.Service{}, nil)
+
+			is.Equal(tc.expErr, s.ValidateCustomAlias(tc.alias))
+		})
 	}
 }
