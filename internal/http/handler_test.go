@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -29,11 +30,11 @@ func (s *mockService) URLByAlias(ctx context.Context, alias string) (URL string,
 
 func TestHandler_Shorten(t *testing.T) {
 	testcases := []struct {
-		name        string
-		s           Service
-		queryParams string
-		expCode     int
-		expBody     string
+		name    string
+		s       Service
+		body    string
+		expCode int
+		expBody string
 	}{
 		{
 			name: "URL is shortened",
@@ -42,9 +43,9 @@ func TestHandler_Shorten(t *testing.T) {
 					return "urx.io/xxxxxxxx", nil
 				},
 			},
-			queryParams: "?url=https://x.xx",
-			expCode:     http.StatusOK,
-			expBody:     `{"urx":"urx.io/xxxxxxxx"}`,
+			body:    `{"url":"https://x.xx"}`,
+			expCode: http.StatusOK,
+			expBody: `{"urx":"urx.io/xxxxxxxx"}`,
 		},
 		{
 			name: "URL is shortened with custom alias",
@@ -53,9 +54,14 @@ func TestHandler_Shorten(t *testing.T) {
 					return fmt.Sprintf("urx.io/%s", alias), nil
 				},
 			},
-			queryParams: "?url=https://x.xx&alias=xxxx",
-			expCode:     http.StatusOK,
-			expBody:     `{"urx":"urx.io/xxxx"}`,
+			body:    `{"url":"https://x.xx","alias":"xxxx"}`,
+			expCode: http.StatusOK,
+			expBody: `{"urx":"urx.io/xxxx"}`,
+		},
+		{
+			name:    "empty request body",
+			expCode: http.StatusBadRequest,
+			expBody: `{"error":"EOF"}`,
 		},
 		{
 			name: "invalid URL",
@@ -64,6 +70,7 @@ func TestHandler_Shorten(t *testing.T) {
 					return "", service.ErrInvalidURL
 				},
 			},
+			body:    `{"url":"x.xx"}`,
 			expCode: http.StatusBadRequest,
 			expBody: `{"error":"invalid URL"}`,
 		},
@@ -74,6 +81,7 @@ func TestHandler_Shorten(t *testing.T) {
 					return "", service.ErrInvalidAlias
 				},
 			},
+			body:    `{"url":"https://x.xx","alias":"x"}`,
 			expCode: http.StatusBadRequest,
 			expBody: `{"error":"invalid alias"}`,
 		},
@@ -84,6 +92,7 @@ func TestHandler_Shorten(t *testing.T) {
 					return "", errors.New("unexpected error")
 				},
 			},
+			body:    `{"url":"https://x.xx"}`,
 			expCode: http.StatusInternalServerError,
 		},
 	}
@@ -93,7 +102,7 @@ func TestHandler_Shorten(t *testing.T) {
 			is := is.New(t)
 			h := NewHandler(tc.s)
 
-			r := httptest.NewRequest(http.MethodGet, "/api/v1/shorten"+tc.queryParams, nil)
+			r := httptest.NewRequest(http.MethodPost, "/api/v1/shorten", bytes.NewBufferString(tc.body))
 			rr := httptest.NewRecorder()
 			h.ServeHTTP(rr, r)
 

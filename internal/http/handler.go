@@ -28,7 +28,7 @@ type Handler struct {
 func NewHandler(s Service) *Handler {
 	h := &Handler{r: chi.NewRouter(), s: s}
 
-	h.r.Get("/api/v1/shorten", h.Shorten)
+	h.r.Post("/api/v1/shorten", h.Shorten)
 	h.r.Get("/{alias}", h.Redirect)
 
 	return h
@@ -49,12 +49,28 @@ func (h *Handler) respond(w http.ResponseWriter, code int, data interface{}) {
 	}
 }
 
+// ShortenInput is request DTO for shortening endpoint.
+type ShortenInput struct {
+	URL   string `json:"url"`
+	Alias string `json:"alias"`
+}
+
+// ShortenOutput is response DTO for shortening endpoint.
+type ShortenOutput struct {
+	URX string `json:"urx"`
+}
+
 // Shorten is endpoint for shortening URLs.
 func (h *Handler) Shorten(w http.ResponseWriter, r *http.Request) {
-	URL := r.URL.Query().Get("url")
-	alias := r.URL.Query().Get("alias")
+	var i ShortenInput
+	if err := json.NewDecoder(r.Body).Decode(&i); err != nil {
+		h.respond(w, http.StatusBadRequest, map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
 
-	URX, err := h.s.Shorten(r.Context(), URL, alias)
+	URX, err := h.s.Shorten(r.Context(), i.URL, i.Alias)
 	if err == service.ErrInvalidURL || err == service.ErrInvalidAlias {
 		h.respond(w, http.StatusBadRequest, map[string]interface{}{
 			"error": err.Error(),
@@ -63,9 +79,7 @@ func (h *Handler) Shorten(w http.ResponseWriter, r *http.Request) {
 		zap.L().Error(err.Error())
 		h.respond(w, http.StatusInternalServerError, nil)
 	} else {
-		h.respond(w, http.StatusOK, map[string]interface{}{
-			"urx": URX,
-		})
+		h.respond(w, http.StatusOK, ShortenOutput{URX: URX})
 	}
 }
 
