@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi"
 	"go.uber.org/zap"
@@ -28,8 +29,8 @@ type Handler struct {
 func NewHandler(s Service) *Handler {
 	h := &Handler{r: chi.NewRouter(), s: s}
 
-	h.r.Post("/api/v1/shorten", h.Shorten)
-	h.r.Get("/{alias}", h.Redirect)
+	h.r.Post("/api/v1/shorten", LogResponseTime(h.Shorten))
+	h.r.Get("/{alias}", LogResponseTime(h.Redirect))
 
 	return h
 }
@@ -95,5 +96,16 @@ func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 		h.respond(w, http.StatusInternalServerError, nil)
 	} else {
 		http.Redirect(w, r, URL, http.StatusSeeOther)
+	}
+}
+
+// LogResponseTime is middleware for logging request execution time.
+func LogResponseTime(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		next.ServeHTTP(w, r)
+
+		zap.S().Infof("request: %s, took: %v", r.URL, time.Since(start))
 	}
 }
