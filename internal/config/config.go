@@ -19,6 +19,7 @@ type Config struct {
 	MongoDB
 	HTTPServer
 	GRPCServer
+	Redis
 }
 
 // Service is configuration for service.
@@ -42,6 +43,12 @@ type HTTPServer struct {
 // GRPCServer is configuration for gRPC server.
 type GRPCServer struct {
 	Addr string `envconfig:"GRPCSERVER_ADDR" default:":8081"`
+}
+
+// Redis is configuration for Redis.
+type Redis struct {
+	Addr     string `envconfig:"REDIS_ADDR" default:"localhost:6379"`
+	Password string `envconfig:"REDIS_PASSWORD" default:"password"`
 }
 
 // Get creates Config singleton instance and returns it.

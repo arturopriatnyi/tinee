@@ -16,6 +16,7 @@ import (
 	"urx/internal/grpc"
 	"urx/internal/http"
 	"urx/internal/mongodb"
+	"urx/internal/redis"
 	"urx/internal/service"
 	"urx/pkg/pb"
 )
@@ -37,6 +38,12 @@ func main() {
 		zap.L().Fatal(err.Error())
 	}
 	zap.L().Info("connected to MongoDB")
+
+	redis, err := redis.Open(ctx, cfg.Redis)
+	if err != nil {
+		zap.L().Fatal(err.Error())
+	}
+	zap.L().Info("connected to Redis")
 
 	r := mongodb.NewLinkRepo(mgo)
 
@@ -86,4 +93,9 @@ func main() {
 		zap.L().Error(err.Error())
 	}
 	zap.L().Info("disconnected from MongoDB")
+
+	if err = redis.Close(); err != nil {
+		zap.L().Error(err.Error())
+	}
+	zap.L().Info("disconnected from Redis")
 }
