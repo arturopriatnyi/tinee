@@ -16,7 +16,7 @@ import (
 // Service is urx service interface.
 type Service interface {
 	Shorten(ctx context.Context, URL, alias string) (URX string, err error)
-	URLByAlias(ctx context.Context, alias string) (URL string, err error)
+	LinkByAlias(ctx context.Context, alias string) (l service.Link, err error)
 }
 
 // Handler is HTTP handler for urx.
@@ -88,14 +88,14 @@ func (h *Handler) Shorten(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 	alias := chi.URLParam(r, "alias")
 
-	URL, err := h.s.URLByAlias(r.Context(), alias)
+	l, err := h.s.LinkByAlias(r.Context(), alias)
 	if err == service.ErrLinkNotFound {
 		h.respond(w, http.StatusNotFound, nil)
 	} else if err != nil {
 		zap.L().Error(err.Error())
 		h.respond(w, http.StatusInternalServerError, nil)
 	} else {
-		http.Redirect(w, r, URL, http.StatusSeeOther)
+		http.Redirect(w, r, l.URL, http.StatusSeeOther)
 	}
 }
 

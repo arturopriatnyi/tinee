@@ -16,16 +16,16 @@ import (
 )
 
 type mockService struct {
-	shorten    func(ctx context.Context, URL, alias string) (URX string, err error)
-	urlByAlias func(ctx context.Context, alias string) (URL string, err error)
+	shorten     func(ctx context.Context, URL, alias string) (URX string, err error)
+	linkByAlias func(ctx context.Context, alias string) (l service.Link, err error)
 }
 
 func (s *mockService) Shorten(ctx context.Context, URL, alias string) (URX string, err error) {
 	return s.shorten(ctx, URL, alias)
 }
 
-func (s *mockService) URLByAlias(ctx context.Context, alias string) (URL string, err error) {
-	return s.urlByAlias(ctx, alias)
+func (s *mockService) LinkByAlias(ctx context.Context, alias string) (l service.Link, err error) {
+	return s.linkByAlias(ctx, alias)
 }
 
 func TestHandler_Shorten(t *testing.T) {
@@ -122,18 +122,18 @@ func TestHandler_Redirect(t *testing.T) {
 		{
 			name: "URX redirected to actual URL",
 			s: &mockService{
-				urlByAlias: func(ctx context.Context, alias string) (URL string, err error) {
-					return "https://x.xx", nil
+				linkByAlias: func(ctx context.Context, alias string) (l service.Link, err error) {
+					return service.Link{URL: "https://x.xx"}, nil
 				},
 			},
 			expCode: http.StatusSeeOther,
 			expURL:  "https://x.xx",
 		},
 		{
-			name: "URX not found",
+			name: "link not found",
 			s: &mockService{
-				urlByAlias: func(ctx context.Context, alias string) (URL string, err error) {
-					return "", service.ErrLinkNotFound
+				linkByAlias: func(ctx context.Context, alias string) (l service.Link, err error) {
+					return service.Link{}, service.ErrLinkNotFound
 				},
 			},
 			expCode: http.StatusNotFound,
@@ -141,8 +141,8 @@ func TestHandler_Redirect(t *testing.T) {
 		{
 			name: "unexpected error",
 			s: &mockService{
-				urlByAlias: func(ctx context.Context, alias string) (URL string, err error) {
-					return "", errors.New("unexpected error")
+				linkByAlias: func(ctx context.Context, alias string) (l service.Link, err error) {
+					return service.Link{}, errors.New("unexpected error")
 				},
 			},
 			expCode: http.StatusInternalServerError,

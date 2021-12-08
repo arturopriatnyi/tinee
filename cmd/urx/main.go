@@ -47,7 +47,7 @@ func main() {
 
 	r := mongodb.NewLinkRepo(mgo)
 
-	s := service.New(cfg.Service, r)
+	s := service.New(cfg.Service, r, nil)
 
 	httpServer := &stdhttp.Server{
 		Addr:    cfg.HTTPServer.Addr,

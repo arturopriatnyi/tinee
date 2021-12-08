@@ -29,18 +29,33 @@ func (r *mockLinkRepo) FindByAlias(ctx context.Context, alias string) (Link, err
 	return r.findByAlias(ctx, alias)
 }
 
+type mockLinkCache struct {
+	get func(context.Context, string) (Link, error)
+	set func(context.Context, string, Link) error
+}
+
+func (c *mockLinkCache) Get(ctx context.Context, alias string) (Link, error) {
+	return c.get(ctx, alias)
+}
+
+func (c *mockLinkCache) Set(ctx context.Context, alias string, l Link) error {
+	return c.set(ctx, alias, l)
+}
+
 func TestNewService(t *testing.T) {
 	is := is.New(t)
 	cfg := config.Service{}
 	r := &mockLinkRepo{}
+	c := &mockLinkCache{}
 
-	is.Equal(&Service{cfg: cfg, r: r}, New(cfg, r))
+	is.Equal(&Service{cfg: cfg, r: r, c: c}, New(cfg, r, c))
 }
 
 func TestService_Shorten(t *testing.T) {
 	testcases := []struct {
 		name   string
 		r      *mockLinkRepo
+		c      *mockLinkCache
 		url    string
 		alias  string
 		expErr error
@@ -55,6 +70,14 @@ func TestService_Shorten(t *testing.T) {
 					return Link{}, ErrLinkNotFound
 				},
 				save: func(ctx context.Context, link Link) error {
+					return nil
+				},
+			},
+			c: &mockLinkCache{
+				get: func(ctx context.Context, alias string) (Link, error) {
+					return Link{}, ErrLinkNotFound
+				},
+				set: func(ctx context.Context, alias string, l Link) error {
 					return nil
 				},
 			},
@@ -74,6 +97,14 @@ func TestService_Shorten(t *testing.T) {
 					return nil
 				},
 			},
+			c: &mockLinkCache{
+				get: func(ctx context.Context, alias string) (Link, error) {
+					return Link{}, ErrLinkNotFound
+				},
+				set: func(ctx context.Context, alias string, l Link) error {
+					return nil
+				},
+			},
 			url:    "https://x.xx",
 			alias:  "xxxx",
 			expErr: nil,
@@ -84,6 +115,16 @@ func TestService_Shorten(t *testing.T) {
 			expErr: ErrInvalidURL,
 		},
 		{
+			name: "FindByURL unexpected error",
+			r: &mockLinkRepo{
+				findByURL: func(ctx context.Context, url string) (Link, error) {
+					return Link{}, errors.New("unexpected error")
+				},
+			},
+			url:    "https://x.xx",
+			expErr: errors.New("unexpected error"),
+		},
+		{
 			name: "FindByAlias invalid alias error while creating link",
 			r: &mockLinkRepo{
 				findByURL: func(ctx context.Context, url string) (Link, error) {
@@ -91,6 +132,14 @@ func TestService_Shorten(t *testing.T) {
 				},
 				findByAlias: func(ctx context.Context, alias string) (Link, error) {
 					return Link{}, nil
+				},
+			},
+			c: &mockLinkCache{
+				get: func(ctx context.Context, alias string) (Link, error) {
+					return Link{}, ErrLinkNotFound
+				},
+				set: func(ctx context.Context, alias string, l Link) error {
+					return nil
 				},
 			},
 			url:    "https://x.xx",
@@ -106,14 +155,12 @@ func TestService_Shorten(t *testing.T) {
 					return Link{}, errors.New("unexpected error")
 				},
 			},
-			url:    "https://x.xx",
-			expErr: errors.New("unexpected error"),
-		},
-		{
-			name: "FindByURL unexpected error",
-			r: &mockLinkRepo{
-				findByURL: func(ctx context.Context, url string) (Link, error) {
-					return Link{}, errors.New("unexpected error")
+			c: &mockLinkCache{
+				get: func(ctx context.Context, alias string) (Link, error) {
+					return Link{}, ErrLinkNotFound
+				},
+				set: func(ctx context.Context, alias string, l Link) error {
+					return nil
 				},
 			},
 			url:    "https://x.xx",
@@ -154,6 +201,14 @@ func TestService_Shorten(t *testing.T) {
 					return nil
 				},
 			},
+			c: &mockLinkCache{
+				get: func(ctx context.Context, alias string) (Link, error) {
+					return Link{}, ErrLinkNotFound
+				},
+				set: func(ctx context.Context, alias string, l Link) error {
+					return nil
+				},
+			},
 			url:    "https://x.xx",
 			alias:  "xxxx",
 			expErr: ErrInvalidAlias,
@@ -175,6 +230,14 @@ func TestService_Shorten(t *testing.T) {
 					return nil
 				},
 			},
+			c: &mockLinkCache{
+				get: func(ctx context.Context, alias string) (Link, error) {
+					return Link{}, ErrLinkNotFound
+				},
+				set: func(ctx context.Context, alias string, l Link) error {
+					return nil
+				},
+			},
 			url:    "https://x.xx",
 			alias:  "xxxx",
 			expErr: errors.New("unexpected error"),
@@ -184,7 +247,7 @@ func TestService_Shorten(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			is := is.New(t)
-			s := New(config.Service{}, tc.r)
+			s := New(config.Service{}, tc.r, tc.c)
 
 			urx, err := s.Shorten(context.Background(), tc.url, tc.alias)
 
@@ -197,35 +260,62 @@ func TestService_Shorten(t *testing.T) {
 	}
 }
 
-func TestService_URLByAlias(t *testing.T) {
+func TestService_LinkByAlias(t *testing.T) {
 	testcases := []struct {
-		name   string
-		r      *mockLinkRepo
-		urx    string
-		expUrl string
-		expErr error
+		name    string
+		r       *mockLinkRepo
+		c       *mockLinkCache
+		urx     string
+		expLink Link
+		expErr  error
 	}{
 		{
-			name: "URL is found",
+			name: "link is found in repository",
 			r: &mockLinkRepo{
 				findByAlias: func(ctx context.Context, URX string) (Link, error) {
 					return Link{URL: "https://x.xx"}, nil
 				},
 			},
-			urx:    "xxxxxxxx",
-			expUrl: "https://x.xx",
+			c: &mockLinkCache{
+				get: func(ctx context.Context, alias string) (Link, error) {
+					return Link{}, ErrLinkNotFound
+				},
+				set: func(ctx context.Context, alias string, l Link) error {
+					return nil
+				},
+			},
+			urx:     "xxxxxxxx",
+			expLink: Link{URL: "https://x.xx"},
+		},
+		{
+			name: "link is found in cache",
+			r: &mockLinkRepo{
+				findByAlias: func(ctx context.Context, URX string) (Link, error) {
+					return Link{}, ErrLinkNotFound
+				},
+			},
+			c: &mockLinkCache{
+				get: func(ctx context.Context, alias string) (Link, error) {
+					return Link{URL: "https://x.xx"}, nil
+				},
+				set: func(ctx context.Context, alias string, l Link) error {
+					return nil
+				},
+			},
+			urx:     "xxxxxxxx",
+			expLink: Link{URL: "https://x.xx"},
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			is := is.New(t)
-			s := New(config.Service{}, tc.r)
+			s := New(config.Service{}, tc.r, tc.c)
 
-			url, err := s.URLByAlias(context.Background(), tc.urx)
+			l, err := s.LinkByAlias(context.Background(), tc.urx)
 
 			is.Equal(tc.expErr, err)
-			is.Equal(tc.expUrl, url)
+			is.Equal(tc.expLink, l)
 		})
 	}
 }
@@ -274,7 +364,7 @@ func TestService_CreateLink(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			is := is.New(t)
-			s := New(config.Service{}, tc.r)
+			s := New(config.Service{}, tc.r, nil)
 
 			l, err := s.CreateLink(context.Background(), tc.url)
 
@@ -288,7 +378,7 @@ func TestService_CreateLink(t *testing.T) {
 
 func TestService_URX(t *testing.T) {
 	is := is.New(t)
-	s := New(config.Service{Domain: "urx.io"}, nil)
+	s := New(config.Service{Domain: "urx.io"}, nil, nil)
 
 	is.Equal("urx.io/xxxx", s.URX("xxxx"))
 }
@@ -329,7 +419,7 @@ func TestService_ValidateURL(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			is := is.New(t)
-			s := New(config.Service{}, nil)
+			s := New(config.Service{}, nil, nil)
 
 			is.Equal(tc.expErr, s.ValidateURL(tc.url))
 		})
@@ -362,7 +452,7 @@ func TestService_ValidateCustomAlias(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			is := is.New(t)
-			s := New(config.Service{}, nil)
+			s := New(config.Service{}, nil, nil)
 
 			is.Equal(tc.expErr, s.ValidateCustomAlias(tc.alias))
 		})

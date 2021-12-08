@@ -36,15 +36,22 @@ type LinkRepo interface {
 	FindByAlias(context.Context, string) (Link, error)
 }
 
+// LinkCache is link cache interface.
+type LinkCache interface {
+	Set(ctx context.Context, alias string, l Link) error
+	Get(ctx context.Context, alias string) (Link, error)
+}
+
 // Service is URL shortening service.
 type Service struct {
 	cfg config.Service
 	r   LinkRepo
+	c   LinkCache
 }
 
 // New creates and returns a new Service instance.
-func New(cfg config.Service, r LinkRepo) *Service {
-	return &Service{cfg: cfg, r: r}
+func New(cfg config.Service, r LinkRepo, c LinkCache) *Service {
+	return &Service{cfg: cfg, r: r, c: c}
 }
 
 // Shorten shortens provided URL.
@@ -70,7 +77,7 @@ func (s *Service) Shorten(ctx context.Context, URL, alias string) (URX string, e
 	if err = s.ValidateCustomAlias(alias); err != nil {
 		return "", err
 	}
-	l, err := s.r.FindByAlias(ctx, alias)
+	l, err := s.LinkByAlias(ctx, alias)
 	if err == ErrLinkNotFound {
 		link.Aliases = append(link.Aliases, alias)
 	} else if err == nil && link.ID != l.ID {
@@ -82,11 +89,17 @@ func (s *Service) Shorten(ctx context.Context, URL, alias string) (URX string, e
 	return s.URX(alias), s.r.Save(ctx, link)
 }
 
-// URLByAlias returns URL by alias.
-func (s *Service) URLByAlias(ctx context.Context, alias string) (URL string, err error) {
-	l, err := s.r.FindByAlias(ctx, alias)
+// LinkByAlias finds and returns a Link by alias.
+func (s *Service) LinkByAlias(ctx context.Context, alias string) (l Link, err error) {
+	if l, err = s.c.Get(ctx, alias); err == nil {
+		return l, nil
+	}
 
-	return l.URL, err
+	if l, err = s.r.FindByAlias(ctx, alias); err == nil {
+		_ = s.c.Set(ctx, alias, l)
+	}
+
+	return l, err
 }
 
 // CreateLink creates a Link with provided URL and generated alias.
