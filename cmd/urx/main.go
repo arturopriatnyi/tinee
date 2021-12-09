@@ -39,15 +39,15 @@ func main() {
 	}
 	zap.L().Info("connected to MongoDB")
 
-	redis, err := redis.Open(ctx, cfg.Redis)
+	rds, err := redis.Open(ctx, cfg.Redis)
 	if err != nil {
 		zap.L().Fatal(err.Error())
 	}
 	zap.L().Info("connected to Redis")
 
-	r := mongodb.NewLinkRepo(mgo)
-
-	s := service.New(cfg.Service, r, nil)
+	repo := mongodb.NewLinkRepo(mgo)
+	cache := redis.NewLinkCache(rds)
+	s := service.New(cfg.Service, repo, cache)
 
 	httpServer := &stdhttp.Server{
 		Addr:    cfg.HTTPServer.Addr,
@@ -94,7 +94,7 @@ func main() {
 	}
 	zap.L().Info("disconnected from MongoDB")
 
-	if err = redis.Close(); err != nil {
+	if err = rds.Close(); err != nil {
 		zap.L().Error(err.Error())
 	}
 	zap.L().Info("disconnected from Redis")
