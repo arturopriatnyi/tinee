@@ -1,3 +1,3 @@
-# urx
+# tinee
 
-urx is URL shortening service.
+tinee is URL shortening service.

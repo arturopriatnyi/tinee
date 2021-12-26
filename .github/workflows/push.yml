@@ -20,7 +20,7 @@ jobs:
       run: make test
 
     - name: Run build
-      run: go build ./cmd/urx/main.go
+      run: go build ./cmd/tinee/main.go
 
     - name: Trigger deployment script on VPS
       uses: appleboy/ssh-action@master
@@ -30,4 +30,4 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         passphrase: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
-        script: cd urx && ./deploy.sh
+        script: cd tinee && ./deploy.sh

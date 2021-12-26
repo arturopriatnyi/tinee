@@ -1,6 +1,6 @@
 .PHONY: build
 protobuf:
-	protoc -I api/pb --go_out=plugins=grpc:pkg/pb --go_opt=paths=source_relative api/pb/urx.proto
+	protoc -I api/pb --go_out=plugins=grpc:pkg/pb --go_opt=paths=source_relative api/pb/tinee.proto
 
 build:
 	docker-compose build

@@ -1,4 +1,4 @@
-// Package http provides HTTP handler for urx.
+// Package http provides HTTP handler for tinee.
 package http
 
 import (
@@ -10,16 +10,16 @@ import (
 	"github.com/go-chi/chi"
 	"go.uber.org/zap"
 
-	"urx/internal/service"
+	"tinee/internal/service"
 )
 
-// Service is urx service interface.
+// Service is tinee service interface.
 type Service interface {
-	Shorten(ctx context.Context, URL, alias string) (URX string, err error)
+	Shorten(ctx context.Context, URL, alias string) (tineeURL string, err error)
 	LinkByAlias(ctx context.Context, alias string) (l service.Link, err error)
 }
 
-// Handler is HTTP handler for urx.
+// Handler is HTTP handler for tinee.
 type Handler struct {
 	r *chi.Mux
 	s Service
@@ -58,7 +58,7 @@ type ShortenInput struct {
 
 // ShortenOutput is response DTO for shortening endpoint.
 type ShortenOutput struct {
-	URX string `json:"urx"`
+	TineeURL string `json:"tineeUrl"`
 }
 
 // Shorten is endpoint for shortening URLs.
@@ -71,7 +71,7 @@ func (h *Handler) Shorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	URX, err := h.s.Shorten(r.Context(), i.URL, i.Alias)
+	tineeURL, err := h.s.Shorten(r.Context(), i.URL, i.Alias)
 	if err == service.ErrInvalidURL || err == service.ErrInvalidAlias {
 		h.respond(w, http.StatusBadRequest, map[string]interface{}{
 			"error": err.Error(),
@@ -80,11 +80,11 @@ func (h *Handler) Shorten(w http.ResponseWriter, r *http.Request) {
 		zap.L().Error(err.Error())
 		h.respond(w, http.StatusInternalServerError, nil)
 	} else {
-		h.respond(w, http.StatusOK, ShortenOutput{URX: URX})
+		h.respond(w, http.StatusOK, ShortenOutput{TineeURL: tineeURL})
 	}
 }
 
-// Redirect is endpoint for redirecting URXs.
+// Redirect is endpoint for redirecting shortened URLs.
 func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 	alias := chi.URLParam(r, "alias")
 

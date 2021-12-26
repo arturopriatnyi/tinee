@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 
-	"urx/internal/config"
+	"tinee/internal/config"
 )
 
 // DB represents Redis database.

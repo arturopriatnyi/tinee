@@ -1,5 +1,5 @@
 // Package service provides service for shortening URLs.
-// Shortened URL is called URX.
+// Shortened URL is called tineeURL.
 package service
 
 import (
@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"urx/internal/config"
+	"tinee/internal/config"
 )
 
 const (
@@ -55,7 +55,7 @@ func New(cfg config.Service, r LinkRepo, c LinkCache) *Service {
 }
 
 // Shorten shortens provided URL.
-func (s *Service) Shorten(ctx context.Context, URL, alias string) (URX string, err error) {
+func (s *Service) Shorten(ctx context.Context, URL, alias string) (tineeURL string, err error) {
 	if err = s.ValidateURL(URL); err != nil {
 		return "", err
 	}
@@ -71,7 +71,7 @@ func (s *Service) Shorten(ctx context.Context, URL, alias string) (URX string, e
 	}
 
 	if alias == "" {
-		return s.URX(link.Aliases[0]), nil
+		return s.TineeURL(link.Aliases[0]), nil
 	}
 
 	if err = s.ValidateCustomAlias(alias); err != nil {
@@ -86,7 +86,7 @@ func (s *Service) Shorten(ctx context.Context, URL, alias string) (URX string, e
 		return "", err
 	}
 
-	return s.URX(alias), s.r.Save(ctx, link)
+	return s.TineeURL(alias), s.r.Save(ctx, link)
 }
 
 // LinkByAlias finds and returns a Link by alias.
@@ -114,8 +114,8 @@ func (s *Service) CreateLink(ctx context.Context, URL string) (l Link, err error
 	return l, s.r.Save(ctx, l)
 }
 
-// URX forms URX with provided alias.
-func (s *Service) URX(alias string) string {
+// TineeURL forms tineeURL with provided alias.
+func (s *Service) TineeURL(alias string) string {
 	return fmt.Sprintf("%s/%s", s.cfg.Domain, alias)
 }
 

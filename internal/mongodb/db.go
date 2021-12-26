@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"urx/internal/config"
+	"tinee/internal/config"
 )
 
 // DB represents MongoDB database.

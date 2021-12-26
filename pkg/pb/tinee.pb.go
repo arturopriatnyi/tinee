@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.27.1
 // 	protoc        v3.18.0
-// source: urx.proto
+// source: tinee.proto
 
 package pb
 
@@ -39,7 +39,7 @@ type ShortenRequest struct {
 func (x *ShortenRequest) Reset() {
 	*x = ShortenRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_urx_proto_msgTypes[0]
+		mi := &file_tinee_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -52,7 +52,7 @@ func (x *ShortenRequest) String() string {
 func (*ShortenRequest) ProtoMessage() {}
 
 func (x *ShortenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_urx_proto_msgTypes[0]
+	mi := &file_tinee_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65,7 +65,7 @@ func (x *ShortenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ShortenRequest.ProtoReflect.Descriptor instead.
 func (*ShortenRequest) Descriptor() ([]byte, []int) {
-	return file_urx_proto_rawDescGZIP(), []int{0}
+	return file_tinee_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *ShortenRequest) GetUrl() string {
@@ -89,13 +89,13 @@ type ShortenResponse struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Shortened URL.
-	Urx string `protobuf:"bytes,1,opt,name=urx,proto3" json:"urx,omitempty"`
+	TineeUrl string `protobuf:"bytes,1,opt,name=tinee_url,json=tineeUrl,proto3" json:"tinee_url,omitempty"`
 }
 
 func (x *ShortenResponse) Reset() {
 	*x = ShortenResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_urx_proto_msgTypes[1]
+		mi := &file_tinee_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -108,7 +108,7 @@ func (x *ShortenResponse) String() string {
 func (*ShortenResponse) ProtoMessage() {}
 
 func (x *ShortenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_urx_proto_msgTypes[1]
+	mi := &file_tinee_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -121,12 +121,12 @@ func (x *ShortenResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ShortenResponse.ProtoReflect.Descriptor instead.
 func (*ShortenResponse) Descriptor() ([]byte, []int) {
-	return file_urx_proto_rawDescGZIP(), []int{1}
+	return file_tinee_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ShortenResponse) GetUrx() string {
+func (x *ShortenResponse) GetTineeUrl() string {
 	if x != nil {
-		return x.Urx
+		return x.TineeUrl
 	}
 	return ""
 }
@@ -144,7 +144,7 @@ type UrlByAliasRequest struct {
 func (x *UrlByAliasRequest) Reset() {
 	*x = UrlByAliasRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_urx_proto_msgTypes[2]
+		mi := &file_tinee_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -157,7 +157,7 @@ func (x *UrlByAliasRequest) String() string {
 func (*UrlByAliasRequest) ProtoMessage() {}
 
 func (x *UrlByAliasRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_urx_proto_msgTypes[2]
+	mi := &file_tinee_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -170,7 +170,7 @@ func (x *UrlByAliasRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UrlByAliasRequest.ProtoReflect.Descriptor instead.
 func (*UrlByAliasRequest) Descriptor() ([]byte, []int) {
-	return file_urx_proto_rawDescGZIP(), []int{2}
+	return file_tinee_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *UrlByAliasRequest) GetAlias() string {
@@ -193,7 +193,7 @@ type UrlByAliasResponse struct {
 func (x *UrlByAliasResponse) Reset() {
 	*x = UrlByAliasResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_urx_proto_msgTypes[3]
+		mi := &file_tinee_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -206,7 +206,7 @@ func (x *UrlByAliasResponse) String() string {
 func (*UrlByAliasResponse) ProtoMessage() {}
 
 func (x *UrlByAliasResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_urx_proto_msgTypes[3]
+	mi := &file_tinee_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -219,7 +219,7 @@ func (x *UrlByAliasResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UrlByAliasResponse.ProtoReflect.Descriptor instead.
 func (*UrlByAliasResponse) Descriptor() ([]byte, []int) {
-	return file_urx_proto_rawDescGZIP(), []int{3}
+	return file_tinee_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *UrlByAliasResponse) GetUrl() string {
@@ -229,57 +229,59 @@ func (x *UrlByAliasResponse) GetUrl() string {
 	return ""
 }
 
-var File_urx_proto protoreflect.FileDescriptor
+var File_tinee_proto protoreflect.FileDescriptor
 
-var file_urx_proto_rawDesc = []byte{
-	0x0a, 0x09, 0x75, 0x72, 0x78, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x03, 0x75, 0x72, 0x78,
-	0x22, 0x38, 0x0a, 0x0e, 0x53, 0x68, 0x6f, 0x72, 0x74, 0x65, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x03, 0x75, 0x72, 0x6c, 0x12, 0x14, 0x0a, 0x05, 0x61, 0x6c, 0x69, 0x61, 0x73, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x05, 0x61, 0x6c, 0x69, 0x61, 0x73, 0x22, 0x23, 0x0a, 0x0f, 0x53, 0x68,
-	0x6f, 0x72, 0x74, 0x65, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x10, 0x0a,
-	0x03, 0x75, 0x72, 0x78, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72, 0x78, 0x22,
-	0x29, 0x0a, 0x11, 0x55, 0x72, 0x6c, 0x42, 0x79, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x61, 0x6c, 0x69, 0x61, 0x73, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x05, 0x61, 0x6c, 0x69, 0x61, 0x73, 0x22, 0x26, 0x0a, 0x12, 0x55, 0x72,
-	0x6c, 0x42, 0x79, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x12, 0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75,
-	0x72, 0x6c, 0x32, 0x7a, 0x0a, 0x03, 0x55, 0x52, 0x58, 0x12, 0x34, 0x0a, 0x07, 0x53, 0x68, 0x6f,
-	0x72, 0x74, 0x65, 0x6e, 0x12, 0x13, 0x2e, 0x75, 0x72, 0x78, 0x2e, 0x53, 0x68, 0x6f, 0x72, 0x74,
-	0x65, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14, 0x2e, 0x75, 0x72, 0x78, 0x2e,
-	0x53, 0x68, 0x6f, 0x72, 0x74, 0x65, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x3d, 0x0a, 0x0a, 0x55, 0x72, 0x6c, 0x42, 0x79, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x12, 0x16, 0x2e,
-	0x75, 0x72, 0x78, 0x2e, 0x55, 0x72, 0x6c, 0x42, 0x79, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x17, 0x2e, 0x75, 0x72, 0x78, 0x2e, 0x55, 0x72, 0x6c, 0x42,
-	0x79, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x0c,
-	0x5a, 0x0a, 0x75, 0x72, 0x78, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+var file_tinee_proto_rawDesc = []byte{
+	0x0a, 0x0b, 0x74, 0x69, 0x6e, 0x65, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x05, 0x74,
+	0x69, 0x6e, 0x65, 0x65, 0x22, 0x38, 0x0a, 0x0e, 0x53, 0x68, 0x6f, 0x72, 0x74, 0x65, 0x6e, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72, 0x6c, 0x12, 0x14, 0x0a, 0x05, 0x61, 0x6c, 0x69, 0x61,
+	0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x61, 0x6c, 0x69, 0x61, 0x73, 0x22, 0x2e,
+	0x0a, 0x0f, 0x53, 0x68, 0x6f, 0x72, 0x74, 0x65, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x1b, 0x0a, 0x09, 0x74, 0x69, 0x6e, 0x65, 0x65, 0x5f, 0x75, 0x72, 0x6c, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x74, 0x69, 0x6e, 0x65, 0x65, 0x55, 0x72, 0x6c, 0x22, 0x29,
+	0x0a, 0x11, 0x55, 0x72, 0x6c, 0x42, 0x79, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x61, 0x6c, 0x69, 0x61, 0x73, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x05, 0x61, 0x6c, 0x69, 0x61, 0x73, 0x22, 0x26, 0x0a, 0x12, 0x55, 0x72, 0x6c,
+	0x42, 0x79, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72,
+	0x6c, 0x32, 0x87, 0x01, 0x0a, 0x08, 0x54, 0x69, 0x6e, 0x65, 0x65, 0x55, 0x52, 0x4c, 0x12, 0x38,
+	0x0a, 0x07, 0x53, 0x68, 0x6f, 0x72, 0x74, 0x65, 0x6e, 0x12, 0x15, 0x2e, 0x74, 0x69, 0x6e, 0x65,
+	0x65, 0x2e, 0x53, 0x68, 0x6f, 0x72, 0x74, 0x65, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x1a, 0x16, 0x2e, 0x74, 0x69, 0x6e, 0x65, 0x65, 0x2e, 0x53, 0x68, 0x6f, 0x72, 0x74, 0x65, 0x6e,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x41, 0x0a, 0x0a, 0x55, 0x72, 0x6c, 0x42,
+	0x79, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x12, 0x18, 0x2e, 0x74, 0x69, 0x6e, 0x65, 0x65, 0x2e, 0x55,
+	0x72, 0x6c, 0x42, 0x79, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x1a, 0x19, 0x2e, 0x74, 0x69, 0x6e, 0x65, 0x65, 0x2e, 0x55, 0x72, 0x6c, 0x42, 0x79, 0x41, 0x6c,
+	0x69, 0x61, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x0e, 0x5a, 0x0c, 0x74,
+	0x69, 0x6e, 0x65, 0x65, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
-	file_urx_proto_rawDescOnce sync.Once
-	file_urx_proto_rawDescData = file_urx_proto_rawDesc
+	file_tinee_proto_rawDescOnce sync.Once
+	file_tinee_proto_rawDescData = file_tinee_proto_rawDesc
 )
 
-func file_urx_proto_rawDescGZIP() []byte {
-	file_urx_proto_rawDescOnce.Do(func() {
-		file_urx_proto_rawDescData = protoimpl.X.CompressGZIP(file_urx_proto_rawDescData)
+func file_tinee_proto_rawDescGZIP() []byte {
+	file_tinee_proto_rawDescOnce.Do(func() {
+		file_tinee_proto_rawDescData = protoimpl.X.CompressGZIP(file_tinee_proto_rawDescData)
 	})
-	return file_urx_proto_rawDescData
+	return file_tinee_proto_rawDescData
 }
 
-var file_urx_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
-var file_urx_proto_goTypes = []interface{}{
-	(*ShortenRequest)(nil),     // 0: urx.ShortenRequest
-	(*ShortenResponse)(nil),    // 1: urx.ShortenResponse
-	(*UrlByAliasRequest)(nil),  // 2: urx.UrlByAliasRequest
-	(*UrlByAliasResponse)(nil), // 3: urx.UrlByAliasResponse
+var file_tinee_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_tinee_proto_goTypes = []interface{}{
+	(*ShortenRequest)(nil),     // 0: tinee.ShortenRequest
+	(*ShortenResponse)(nil),    // 1: tinee.ShortenResponse
+	(*UrlByAliasRequest)(nil),  // 2: tinee.UrlByAliasRequest
+	(*UrlByAliasResponse)(nil), // 3: tinee.UrlByAliasResponse
 }
-var file_urx_proto_depIdxs = []int32{
-	0, // 0: urx.URX.Shorten:input_type -> urx.ShortenRequest
-	2, // 1: urx.URX.UrlByAlias:input_type -> urx.UrlByAliasRequest
-	1, // 2: urx.URX.Shorten:output_type -> urx.ShortenResponse
-	3, // 3: urx.URX.UrlByAlias:output_type -> urx.UrlByAliasResponse
+var file_tinee_proto_depIdxs = []int32{
+	0, // 0: tinee.TineeURL.Shorten:input_type -> tinee.ShortenRequest
+	2, // 1: tinee.TineeURL.UrlByAlias:input_type -> tinee.UrlByAliasRequest
+	1, // 2: tinee.TineeURL.Shorten:output_type -> tinee.ShortenResponse
+	3, // 3: tinee.TineeURL.UrlByAlias:output_type -> tinee.UrlByAliasResponse
 	2, // [2:4] is the sub-list for method output_type
 	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -287,13 +289,13 @@ var file_urx_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_urx_proto_init() }
-func file_urx_proto_init() {
-	if File_urx_proto != nil {
+func init() { file_tinee_proto_init() }
+func file_tinee_proto_init() {
+	if File_tinee_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_urx_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_tinee_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ShortenRequest); i {
 			case 0:
 				return &v.state
@@ -305,7 +307,7 @@ func file_urx_proto_init() {
 				return nil
 			}
 		}
-		file_urx_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_tinee_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ShortenResponse); i {
 			case 0:
 				return &v.state
@@ -317,7 +319,7 @@ func file_urx_proto_init() {
 				return nil
 			}
 		}
-		file_urx_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_tinee_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UrlByAliasRequest); i {
 			case 0:
 				return &v.state
@@ -329,7 +331,7 @@ func file_urx_proto_init() {
 				return nil
 			}
 		}
-		file_urx_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_tinee_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UrlByAliasResponse); i {
 			case 0:
 				return &v.state
@@ -346,20 +348,20 @@ func file_urx_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_urx_proto_rawDesc,
+			RawDescriptor: file_tinee_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_urx_proto_goTypes,
-		DependencyIndexes: file_urx_proto_depIdxs,
-		MessageInfos:      file_urx_proto_msgTypes,
+		GoTypes:           file_tinee_proto_goTypes,
+		DependencyIndexes: file_tinee_proto_depIdxs,
+		MessageInfos:      file_tinee_proto_msgTypes,
 	}.Build()
-	File_urx_proto = out.File
-	file_urx_proto_rawDesc = nil
-	file_urx_proto_goTypes = nil
-	file_urx_proto_depIdxs = nil
+	File_tinee_proto = out.File
+	file_tinee_proto_rawDesc = nil
+	file_tinee_proto_goTypes = nil
+	file_tinee_proto_depIdxs = nil
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -370,112 +372,114 @@ var _ grpc.ClientConnInterface
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion6
 
-// URXClient is the client API for URX service.
+// TineeURLClient is the client API for TineeURL service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type URXClient interface {
+type TineeURLClient interface {
 	// Shortens URL.
 	Shorten(ctx context.Context, in *ShortenRequest, opts ...grpc.CallOption) (*ShortenResponse, error)
+	// Returns URL that corresponds to alias from request.
 	UrlByAlias(ctx context.Context, in *UrlByAliasRequest, opts ...grpc.CallOption) (*UrlByAliasResponse, error)
 }
 
-type uRXClient struct {
+type tineeURLClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewURXClient(cc grpc.ClientConnInterface) URXClient {
-	return &uRXClient{cc}
+func NewTineeURLClient(cc grpc.ClientConnInterface) TineeURLClient {
+	return &tineeURLClient{cc}
 }
 
-func (c *uRXClient) Shorten(ctx context.Context, in *ShortenRequest, opts ...grpc.CallOption) (*ShortenResponse, error) {
+func (c *tineeURLClient) Shorten(ctx context.Context, in *ShortenRequest, opts ...grpc.CallOption) (*ShortenResponse, error) {
 	out := new(ShortenResponse)
-	err := c.cc.Invoke(ctx, "/urx.URX/Shorten", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/tinee.TineeURL/Shorten", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *uRXClient) UrlByAlias(ctx context.Context, in *UrlByAliasRequest, opts ...grpc.CallOption) (*UrlByAliasResponse, error) {
+func (c *tineeURLClient) UrlByAlias(ctx context.Context, in *UrlByAliasRequest, opts ...grpc.CallOption) (*UrlByAliasResponse, error) {
 	out := new(UrlByAliasResponse)
-	err := c.cc.Invoke(ctx, "/urx.URX/UrlByAlias", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/tinee.TineeURL/UrlByAlias", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// URXServer is the server API for URX service.
-type URXServer interface {
+// TineeURLServer is the server API for TineeURL service.
+type TineeURLServer interface {
 	// Shortens URL.
 	Shorten(context.Context, *ShortenRequest) (*ShortenResponse, error)
+	// Returns URL that corresponds to alias from request.
 	UrlByAlias(context.Context, *UrlByAliasRequest) (*UrlByAliasResponse, error)
 }
 
-// UnimplementedURXServer can be embedded to have forward compatible implementations.
-type UnimplementedURXServer struct {
+// UnimplementedTineeURLServer can be embedded to have forward compatible implementations.
+type UnimplementedTineeURLServer struct {
 }
 
-func (*UnimplementedURXServer) Shorten(context.Context, *ShortenRequest) (*ShortenResponse, error) {
+func (*UnimplementedTineeURLServer) Shorten(context.Context, *ShortenRequest) (*ShortenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Shorten not implemented")
 }
-func (*UnimplementedURXServer) UrlByAlias(context.Context, *UrlByAliasRequest) (*UrlByAliasResponse, error) {
+func (*UnimplementedTineeURLServer) UrlByAlias(context.Context, *UrlByAliasRequest) (*UrlByAliasResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UrlByAlias not implemented")
 }
 
-func RegisterURXServer(s *grpc.Server, srv URXServer) {
-	s.RegisterService(&_URX_serviceDesc, srv)
+func RegisterTineeURLServer(s *grpc.Server, srv TineeURLServer) {
+	s.RegisterService(&_TineeURL_serviceDesc, srv)
 }
 
-func _URX_Shorten_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _TineeURL_Shorten_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ShortenRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(URXServer).Shorten(ctx, in)
+		return srv.(TineeURLServer).Shorten(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/urx.URX/Shorten",
+		FullMethod: "/tinee.TineeURL/Shorten",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(URXServer).Shorten(ctx, req.(*ShortenRequest))
+		return srv.(TineeURLServer).Shorten(ctx, req.(*ShortenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _URX_UrlByAlias_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _TineeURL_UrlByAlias_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UrlByAliasRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(URXServer).UrlByAlias(ctx, in)
+		return srv.(TineeURLServer).UrlByAlias(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/urx.URX/UrlByAlias",
+		FullMethod: "/tinee.TineeURL/UrlByAlias",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(URXServer).UrlByAlias(ctx, req.(*UrlByAliasRequest))
+		return srv.(TineeURLServer).UrlByAlias(ctx, req.(*UrlByAliasRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-var _URX_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "urx.URX",
-	HandlerType: (*URXServer)(nil),
+var _TineeURL_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "tinee.TineeURL",
+	HandlerType: (*TineeURLServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Shorten",
-			Handler:    _URX_Shorten_Handler,
+			Handler:    _TineeURL_Shorten_Handler,
 		},
 		{
 			MethodName: "UrlByAlias",
-			Handler:    _URX_UrlByAlias_Handler,
+			Handler:    _TineeURL_UrlByAlias_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "urx.proto",
+	Metadata: "tinee.proto",
 }

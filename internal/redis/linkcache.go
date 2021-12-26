@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"urx/internal/service"
+	"tinee/internal/service"
 )
 
 // LinkCache is the link cache.

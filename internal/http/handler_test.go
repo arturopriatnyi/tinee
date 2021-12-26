@@ -12,15 +12,15 @@ import (
 
 	"github.com/matryer/is"
 
-	"urx/internal/service"
+	"tinee/internal/service"
 )
 
 type mockService struct {
-	shorten     func(ctx context.Context, URL, alias string) (URX string, err error)
+	shorten     func(ctx context.Context, URL, alias string) (tineeURL string, err error)
 	linkByAlias func(ctx context.Context, alias string) (l service.Link, err error)
 }
 
-func (s *mockService) Shorten(ctx context.Context, URL, alias string) (URX string, err error) {
+func (s *mockService) Shorten(ctx context.Context, URL, alias string) (string, error) {
 	return s.shorten(ctx, URL, alias)
 }
 
@@ -39,24 +39,24 @@ func TestHandler_Shorten(t *testing.T) {
 		{
 			name: "URL is shortened",
 			s: &mockService{
-				shorten: func(ctx context.Context, URL, alias string) (URX string, err error) {
-					return "urx.io/xxxxxxxx", nil
+				shorten: func(ctx context.Context, URL, alias string) (tineeURL string, err error) {
+					return "tinee.io/xxxxxxxx", nil
 				},
 			},
 			body:    `{"url":"https://x.xx"}`,
 			expCode: http.StatusOK,
-			expBody: `{"urx":"urx.io/xxxxxxxx"}`,
+			expBody: `{"tineeUrl":"tinee.io/xxxxxxxx"}`,
 		},
 		{
 			name: "URL is shortened with custom alias",
 			s: &mockService{
-				shorten: func(ctx context.Context, URL, alias string) (URX string, err error) {
-					return fmt.Sprintf("urx.io/%s", alias), nil
+				shorten: func(ctx context.Context, URL, alias string) (tineeURL string, err error) {
+					return fmt.Sprintf("tinee.io/%s", alias), nil
 				},
 			},
 			body:    `{"url":"https://x.xx","alias":"xxxx"}`,
 			expCode: http.StatusOK,
-			expBody: `{"urx":"urx.io/xxxx"}`,
+			expBody: `{"tineeUrl":"tinee.io/xxxx"}`,
 		},
 		{
 			name:    "empty request body",
@@ -66,7 +66,7 @@ func TestHandler_Shorten(t *testing.T) {
 		{
 			name: "invalid URL",
 			s: &mockService{
-				shorten: func(ctx context.Context, URL, alias string) (URX string, err error) {
+				shorten: func(ctx context.Context, URL, alias string) (tineeURL string, err error) {
 					return "", service.ErrInvalidURL
 				},
 			},
@@ -77,7 +77,7 @@ func TestHandler_Shorten(t *testing.T) {
 		{
 			name: "invalid alias",
 			s: &mockService{
-				shorten: func(ctx context.Context, URL, alias string) (URX string, err error) {
+				shorten: func(ctx context.Context, URL, alias string) (tineeURL string, err error) {
 					return "", service.ErrInvalidAlias
 				},
 			},
@@ -88,7 +88,7 @@ func TestHandler_Shorten(t *testing.T) {
 		{
 			name: "unexpected error",
 			s: &mockService{
-				shorten: func(ctx context.Context, URL, alias string) (URX string, err error) {
+				shorten: func(ctx context.Context, URL, alias string) (tineeURL string, err error) {
 					return "", errors.New("unexpected error")
 				},
 			},
@@ -120,7 +120,7 @@ func TestHandler_Redirect(t *testing.T) {
 		expURL  string
 	}{
 		{
-			name: "URX redirected to actual URL",
+			name: "tineeURL redirected to actual URL",
 			s: &mockService{
 				linkByAlias: func(ctx context.Context, alias string) (l service.Link, err error) {
 					return service.Link{URL: "https://x.xx"}, nil

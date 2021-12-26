@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package urx;
+package tinee;
 
-option go_package = "urx/pkg/pb";
+option go_package = "tinee/pkg/pb";
 
 // API for shortening URLs.
-service URX {
+service TineeURL {
   // Shortens URL.
   rpc Shorten(ShortenRequest) returns (ShortenResponse);
   // Returns URL that corresponds to alias from request.
@@ -23,7 +23,7 @@ message ShortenRequest {
 // Shortening URL response.
 message ShortenResponse {
   // Shortened URL.
-  string urx = 1;
+  string tinee_url = 1;
 }
 
 // Retrieving URL by alias request.

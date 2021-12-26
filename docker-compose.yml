@@ -1,8 +1,8 @@
 version: "3.6"
 
 services:
-  urx:
-    container_name: urx
+  tinee:
+    container_name: tinee
     build:
       context: .
       dockerfile: Dockerfile

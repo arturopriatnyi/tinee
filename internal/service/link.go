@@ -1,4 +1,4 @@
-// Package service provides urx service.
+// Package service provides tinee service.
 package service
 
 import (

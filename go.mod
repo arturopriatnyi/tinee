@@ -1,4 +1,4 @@
-module urx
+module tinee
 
 go 1.16
 

@@ -4,13 +4,13 @@ package grpc
 import (
 	"context"
 
-	"urx/internal/service"
-	"urx/pkg/pb"
+	"tinee/internal/service"
+	"tinee/pkg/pb"
 )
 
-// Service is urx service interface.
+// Service is tinee service interface.
 type Service interface {
-	Shorten(ctx context.Context, URL, alias string) (URX string, err error)
+	Shorten(ctx context.Context, URL, alias string) (tineeURL string, err error)
 	LinkByAlias(ctx context.Context, alias string) (l service.Link, err error)
 }
 
@@ -26,9 +26,9 @@ func NewHandler(s Service) *Handler {
 
 // Shorten shortens URL.
 func (h *Handler) Shorten(ctx context.Context, r *pb.ShortenRequest) (*pb.ShortenResponse, error) {
-	URX, err := h.s.Shorten(ctx, r.GetUrl(), r.GetAlias())
+	tineeURL, err := h.s.Shorten(ctx, r.GetUrl(), r.GetAlias())
 
-	return &pb.ShortenResponse{Urx: URX}, err
+	return &pb.ShortenResponse{TineeUrl: tineeURL}, err
 }
 
 // UrlByAlias returns URL that corresponds to alias in request.

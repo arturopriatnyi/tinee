@@ -12,13 +12,13 @@ import (
 	"go.uber.org/zap"
 	stdgrpc "google.golang.org/grpc"
 
-	"urx/internal/config"
-	"urx/internal/grpc"
-	"urx/internal/http"
-	"urx/internal/mongodb"
-	"urx/internal/redis"
-	"urx/internal/service"
-	"urx/pkg/pb"
+	"tinee/internal/config"
+	"tinee/internal/grpc"
+	"tinee/internal/http"
+	"tinee/internal/mongodb"
+	"tinee/internal/redis"
+	"tinee/internal/service"
+	"tinee/pkg/pb"
 )
 
 func main() {
@@ -55,7 +55,7 @@ func main() {
 	}
 
 	grpcServer := stdgrpc.NewServer()
-	pb.RegisterURXServer(grpcServer, grpc.NewHandler(s))
+	pb.RegisterTineeURLServer(grpcServer, grpc.NewHandler(s))
 	l, err := net.Listen("tcp", cfg.GRPCServer.Addr)
 	if err != nil {
 		zap.L().Fatal(err.Error())

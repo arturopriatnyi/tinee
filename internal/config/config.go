@@ -24,7 +24,7 @@ type Config struct {
 
 // Service is configuration for service.
 type Service struct {
-	Domain string `envconfig:"SERVICE_DOMAIN" default:"urx.io"`
+	Domain string `envconfig:"SERVICE_DOMAIN" default:"tinee.io"`
 }
 
 // MongoDB is configuration for MongoDB database.
@@ -32,7 +32,7 @@ type MongoDB struct {
 	URL      string `envconfig:"MONGO_URL" default:"mongodb://localhost:27017"`
 	Username string `envconfig:"MONGO_USERNAME" default:"root"`
 	Password string `envconfig:"MONGO_PASSWORD" default:"password"`
-	DbName   string `envconfig:"MONGO_DBNAME" default:"urx"`
+	DbName   string `envconfig:"MONGO_DBNAME" default:"tinee"`
 }
 
 // HTTPServer is configuration for HTTP server.

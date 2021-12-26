@@ -8,7 +8,7 @@ import (
 
 	"github.com/matryer/is"
 
-	"urx/internal/config"
+	"tinee/internal/config"
 )
 
 type mockLinkRepo struct {
@@ -66,7 +66,7 @@ func TestService_Shorten(t *testing.T) {
 				findByURL: func(ctx context.Context, url string) (Link, error) {
 					return Link{}, ErrLinkNotFound
 				},
-				findByAlias: func(ctx context.Context, urx string) (Link, error) {
+				findByAlias: func(ctx context.Context, alias string) (Link, error) {
 					return Link{}, ErrLinkNotFound
 				},
 				save: func(ctx context.Context, link Link) error {
@@ -90,7 +90,7 @@ func TestService_Shorten(t *testing.T) {
 				findByURL: func(ctx context.Context, url string) (Link, error) {
 					return Link{}, ErrLinkNotFound
 				},
-				findByAlias: func(ctx context.Context, urx string) (Link, error) {
+				findByAlias: func(ctx context.Context, alias string) (Link, error) {
 					return Link{}, ErrLinkNotFound
 				},
 				save: func(ctx context.Context, link Link) error {
@@ -151,7 +151,7 @@ func TestService_Shorten(t *testing.T) {
 				findByURL: func(ctx context.Context, url string) (Link, error) {
 					return Link{}, ErrLinkNotFound
 				},
-				findByAlias: func(ctx context.Context, urx string) (Link, error) {
+				findByAlias: func(ctx context.Context, alias string) (Link, error) {
 					return Link{}, errors.New("unexpected error")
 				},
 			},
@@ -172,7 +172,7 @@ func TestService_Shorten(t *testing.T) {
 				findByURL: func(ctx context.Context, url string) (Link, error) {
 					return Link{}, ErrLinkNotFound
 				},
-				findByAlias: func(ctx context.Context, urx string) (Link, error) {
+				findByAlias: func(ctx context.Context, alias string) (Link, error) {
 					return Link{}, ErrLinkNotFound
 				},
 				save: func(ctx context.Context, link Link) error {
@@ -249,12 +249,12 @@ func TestService_Shorten(t *testing.T) {
 			is := is.New(t)
 			s := New(config.Service{}, tc.r, tc.c)
 
-			urx, err := s.Shorten(context.Background(), tc.url, tc.alias)
+			tineeURL, err := s.Shorten(context.Background(), tc.url, tc.alias)
 
 			is.Equal(tc.expErr, err)
-			matched, err := regexp.MatchString(`/[a-zA-Z0-9]`, urx)
+			matched, err := regexp.MatchString(`/[a-zA-Z0-9]`, tineeURL)
 			if tc.expErr == nil && (err != nil || !matched) {
-				t.Errorf("invalid URX: %s", urx)
+				t.Errorf("invalid tineeURL: %s", tineeURL)
 			}
 		})
 	}
@@ -265,14 +265,14 @@ func TestService_LinkByAlias(t *testing.T) {
 		name    string
 		r       *mockLinkRepo
 		c       *mockLinkCache
-		urx     string
+		alias   string
 		expLink Link
 		expErr  error
 	}{
 		{
 			name: "link is found in repository",
 			r: &mockLinkRepo{
-				findByAlias: func(ctx context.Context, URX string) (Link, error) {
+				findByAlias: func(ctx context.Context, alias string) (Link, error) {
 					return Link{URL: "https://x.xx"}, nil
 				},
 			},
@@ -284,13 +284,13 @@ func TestService_LinkByAlias(t *testing.T) {
 					return nil
 				},
 			},
-			urx:     "xxxxxxxx",
+			alias:   "xxxxxxxx",
 			expLink: Link{URL: "https://x.xx"},
 		},
 		{
 			name: "link is found in cache",
 			r: &mockLinkRepo{
-				findByAlias: func(ctx context.Context, URX string) (Link, error) {
+				findByAlias: func(ctx context.Context, alias string) (Link, error) {
 					return Link{}, ErrLinkNotFound
 				},
 			},
@@ -302,7 +302,7 @@ func TestService_LinkByAlias(t *testing.T) {
 					return nil
 				},
 			},
-			urx:     "xxxxxxxx",
+			alias:   "xxxxxxxx",
 			expLink: Link{URL: "https://x.xx"},
 		},
 	}
@@ -312,7 +312,7 @@ func TestService_LinkByAlias(t *testing.T) {
 			is := is.New(t)
 			s := New(config.Service{}, tc.r, tc.c)
 
-			l, err := s.LinkByAlias(context.Background(), tc.urx)
+			l, err := s.LinkByAlias(context.Background(), tc.alias)
 
 			is.Equal(tc.expErr, err)
 			is.Equal(tc.expLink, l)
@@ -376,11 +376,11 @@ func TestService_CreateLink(t *testing.T) {
 	}
 }
 
-func TestService_URX(t *testing.T) {
+func TestService_TineeURL(t *testing.T) {
 	is := is.New(t)
-	s := New(config.Service{Domain: "urx.io"}, nil, nil)
+	s := New(config.Service{Domain: "tinee.io"}, nil, nil)
 
-	is.Equal("urx.io/xxxx", s.URX("xxxx"))
+	is.Equal("tinee.io/xxxx", s.TineeURL("xxxx"))
 }
 
 func TestService_ValidateURL(t *testing.T) {

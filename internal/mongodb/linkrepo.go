@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"urx/internal/service"
+	"tinee/internal/service"
 )
 
 // Link is service.Link entity for the database.
